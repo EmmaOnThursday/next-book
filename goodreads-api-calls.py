@@ -25,7 +25,6 @@ for user_shelf in user_info['GoodreadsResponse']['user']['user_shelves']['user_s
 # initialize user shelf dictionary
 all_user_books = {}
 
-
 # For each shelf: get book info name, author, goodreads ID, ISBN13, publish year, user rating
 for shelf in shelves.keys():
     # figure out how many pages of 200 books per page are needed for each shelf
