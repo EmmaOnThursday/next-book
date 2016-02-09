@@ -8,74 +8,62 @@ db = SQLAlchemy()
 #Model Definitions
 
 
-# user class 
 class User(db.Model):
-    """NextBook users.
-
-    Live in User table.
-    """
+    """NextBook users."""
 
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     goodreads_uid = db.Column(db.Integer, nullable=False)
-    password = db.Column(db.String(15))
-    rec_frequency = db.Column(db.Integer)
-    sign_up_date = db.Column(db.Datetime)
-    paused = db.Column(db.Boolean)
+    password = db.Column(db.String(15), nullable=False)
+    rec_frequency = db.Column(db.Integer, nullable=False, default=1)
+    sign_up_date = db.Column(db.Datetime, nullable=False)
+    paused = db.Column(db.Integer, nullable=False, default=0)
     paused_date = db.Column(db.Datetime)
 
 
 
-# book class 
 class Book(db.Model):
-    """Books. 
-    These are unique and live in the Library table.
-    """
+    """Books. These are unique and live in the Library table."""
 
     __tablename__ = "library"
 
     book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     ISBN = db.Column(db.Integer)
     goodreads_bid = db.Column(db.Integer)
-    openlib_bid = db.Column()
-    google_bid = db.Column()
+    openlib_bid = db.Column(db.String(20))
+    google_bid = db.Column(db.String(20))
     title = db.Column(db.String(300))
     author = db.Column(db.String(300))
     pub_year = db.Column(db.Integer)
-    preview = db.Column(db.String)
+    preview = db.Column(db.String(200))
     pages = db.Column(db.Integer)
-    subjects = ?????
-
+    publisher = db.Column(db.String(100))
 
 
 
 class Recommendation(db.Model):
-    """Recommendations provided by NextBook.
-    Live in Recommendations table.
-    """
+    """Recommendations provided by NextBook."""
 
     __tablename__ = "recommendations"
 
     rec_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     userbook_id = db.Column(db.Integer, db.ForeignKey('user_books.userbook_id'))
-    date_created = db.Column()
-    date_provided = db.Column()
+    date_created = db.Column(db.Datetime, nullable=False)
+    date_provided = db.Column(db.Datetime)
     # response: read_now, read_later, already_read, reject
     response = db.Column(db.String(20))
  
 
 
 class UserBook(db.Model):
-    """Describes a user's relationship with a particular book.
-    Live in UserBook table.
-    """
+    """Describes a user's relationship with a particular book."""
     __tablename__ = "user_books"
 
     userbook_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     book_id = db.Column(db.Integer, db.ForeignKey('library.book_id'))
-    gr_shelf_id = db.Column()
+    gr_shelf_id = db.Column(db.Integer)
     gr_shelf_name = db.Column(db.String(50))
     #status: read, currently_reading, want_to_read, rec_no_response, not_to_read
     status = db.Column(db.String(50)) 
@@ -91,6 +79,30 @@ class UserBook(db.Model):
             backref=db.backref("userbook"))
 
 
+
+class Subject(db.Model):
+    """A subject that a book could talk about."""
+
+    __tablename__ = "subjects"
+
+    subject_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    subject = db.Column(db.String(100), nullable=False)
+    # source = google_books, open_lib, possibly others?
+    source = db.Column(db.String(25))
+
+
+    books = db.relationship("Book", secondary = 'book_subjects', backref = "subjects")
+
+
+class BookSubject(db.Model):
+    """Association table to connect subjects & books.
+    Tables connected are library & subjects"""
+
+    __tablename__ = "book_subjects"
+
+    booksubject_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('library.book_id'))
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'))
 
 
 
