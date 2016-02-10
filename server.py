@@ -27,6 +27,9 @@ app.jinja_env.undefined = StrictUndefined
 
 @app.route("/sign-up")
     """For new users only: sign-up page."""
+    
+    
+
     return render_template("sign-up.html")
 
 
