@@ -14,6 +14,7 @@ class User(db.Model):
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    email = db.Column(db.String, unique=True, nullable=False)
     goodreads_uid = db.Column(db.Integer, nullable=False)
     password = db.Column(db.String(15), nullable=False)
     rec_frequency = db.Column(db.Integer, nullable=False, default=1)
@@ -29,19 +30,20 @@ class Book(db.Model):
     __tablename__ = "library"
 
     book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    ISBN = db.Column(db.Integer)
+    isbn = db.Column(db.String(13))
     goodreads_bid = db.Column(db.Integer)
     openlib_bid = db.Column(db.String(20))
     google_bid = db.Column(db.String(20))
     title = db.Column(db.String(300))
     author = db.Column(db.String(300))
     pub_year = db.Column(db.Integer)
+    original_pub_year = db.Column(db.Integer)
     preview = db.Column(db.String(200))
     pages = db.Column(db.Integer)
     publisher = db.Column(db.String(100))
     language = db.Column(db.String(15))
-    img_url = db.Column(db.String(100))
-    goodreads_url = db.Column(db.String(100))
+    img_url = db.Column(db.String(300))
+    goodreads_url = db.Column(db.String(300))
     get_subjects = db.Column(db.Integer, default = 0)
 
 
@@ -132,11 +134,13 @@ def connect_to_db(app):
     """Connect the database to our Flask app."""
 
     # Configure to use our PostgreSQL database
-    # ALTER DATABASE NAME IF NECESSARY
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///nextbook'
-    app.config['SQLALCHEMY_ECHO'] = True
+    # app.config['SQLALCHEMY_ECHO'] = True
     db.app = app
     db.init_app(app)
+    with app.app_context():
+        db.create_all
+    return app
 
 
 if __name__ == "__main__":
@@ -149,3 +153,5 @@ if __name__ == "__main__":
 
     connect_to_db(app)
     print "Connected to DB."
+
+# db.create_all()
