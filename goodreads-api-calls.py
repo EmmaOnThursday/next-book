@@ -1,6 +1,5 @@
 import os
 import requests
-# import json
 import xmltodict
 import pdb
 from model import Book, User, Recommendation, UserBook, connect_to_db, db
@@ -28,19 +27,6 @@ def get_shelves(gr_user_id):
         shelves[shelf_name] = {'id': shelf_id, 'item_count': num_of_books, 'pages': num_pages}
 
     return shelves
-
-
-def fetch_subject_info(book_id):
-    """Based on a book's NextBook BID, fetch subject info. 
-    Calls OpenLib & GoogleBooks APIs."""
-    # for each book: 
-        # get ISBN
-        # OpenLib API call
-        # save subjects to subjects table
-        # get subject_ID
-        # save subject_ID & book_ID to book-subjects table
-        # wait 30 seconds
-    pass
 
 
 
@@ -87,6 +73,9 @@ def add_book_to_library(book_list):
             else:
                 current_isbn = "0"
         
+        # if this_book:
+            # print "book exists at id ", this_book.book_id
+
         # if that fails, create a new book
         if not this_book:
             newbook = Book(title = book_info['title'], 
@@ -100,22 +89,24 @@ def add_book_to_library(book_list):
                             goodreads_url = book_info['link'],
                             get_subjects = 1)
             db.session.add(newbook)
-            db.session.commit()
 
+    db.session.commit()
+            # print "new book created at id ", newbook.book_id
 
-# for each book, get original pub date, language from book.show method in GR API
 
 def add_userbook_to_userbooks(book_list, gr_user_id):
     """Add a new userbook to the userbooks table."""
     
     current_user = User.query.filter_by(goodreads_uid=gr_user_id).one()
+    print len(book_list)
 
     for item in book_list:
+        # pdb.set_trace()
         book = item[1] 
         shelf = item[0]
         book_info = book['book']
-        # pdb.set_trace()
-        gr_bid = book_info['id']['#text']
+        gr_bid = int(book['id'])
+        print gr_bid, "type= ", type(gr_bid)
         current_isbn = book_info['isbn13']
 
         #set status
@@ -126,19 +117,25 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
         else:
             status = None
 
-        # get book from library; if book cannot be found, 
-        library_record = db.session.query(Book).filter_by(goodreads_bid = gr_bid).first()
+        # try to get book from library with goodreads ID
+        library_record = Book.query.filter_by(goodreads_bid = gr_bid).first()
+        print type(library_record)
+
+        # if book does not exist w/ goodreads id, try to get it with ISBN
         if not library_record:
+            print "reached line 138"
             if len(current_isbn) == 13:
                 library_record = db.session.query(Book).filter_by(isbn = current_isbn).first()
+                print "reached line 139"
         if not library_record:
-            return "Failed to record user rating for ", book_list[1][1]['book']['title'], "user = ", current_user.email
-
-        # have the library record
-        # need to get shelf & save shelf, user_id, and book_id to user_books
+            print "Failed to record user rating for ", book_list[1][1]['book']['title'], "user = ", current_user.email
         
         new_volume = UserBook.query.filter(UserBook.user_id==current_user.user_id, 
                                             UserBook.book_id == library_record.book_id).first()
+        
+        if new_volume: 
+            print "have this record already at userbook_id", new_volume.userbook_id
+
         if not new_volume:
             new_userbook = UserBook(user_id = current_user.user_id,
                                     book_id = library_record.book_id,
@@ -146,10 +143,10 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
                                     gr_shelf_id = shelves[shelf]['id'],
                                     source = "goodreads",
                                     status = status,
-                                    rating = book['rating'] )
+                                    rating = book['rating'])
             db.session.add(new_userbook)
-            db.session.commit()
-
+            print "created new record at userbook_id", new_userbook.userbook_id
+    db.session.commit()
 
 
 
