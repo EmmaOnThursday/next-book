@@ -32,7 +32,17 @@ def get_shelves(user_id):
 def fetch_subject_info(book_id):
     """Based on a book's NextBook BID, fetch subject info. 
     Calls OpenLib & GoogleBooks APIs."""
+    # for each book: 
+        # get ISBN
+        # OpenLib API call
+        # save subjects to subjects table
+        # get subject_ID
+        # save subject_ID & book_ID to book-subjects table
+        # wait 30 seconds
+        
+
     pass
+
 
 
 def get_books_from_shelves(shelves):
@@ -49,7 +59,6 @@ def get_books_from_shelves(shelves):
             for book in parsed_shelf['GoodreadsResponse']['reviews']['review']:
                 all_books.append((shelf, book))
     return all_books
-
 
 
 
