@@ -19,8 +19,7 @@ def fetch_google_books_categories():
     for book in need_subjects:
         #get isbn & query google books; extract categories from response
         current_isbn = book.isbn
-        response = requests.get("https://www.googleapis.com/books/v1/volumes?q=isbn:%s&key=%s" % (current_isbn, GOOGLE_API_KEY))
-        book_data = response.json()
+        book_data = requests.get("https://www.googleapis.com/books/v1/volumes?q=isbn:%s&key=%s" % (current_isbn, GOOGLE_API_KEY)).json()
         
         if book_data.get('items'):
             googlebooks_count += 1 
