@@ -6,7 +6,7 @@ from model import Book, User, Recommendation, UserBook, connect_to_db, db
 from server import app
 
 goodreads_key=os.environ['GOODREADS_KEY']
-goodreads_secret=os.environ['GOODREADS_SECRET']
+# goodreads_secret=os.environ['GOODREADS_SECRET']
 
 
 def fetch_book_data():
@@ -34,9 +34,9 @@ def fetch_book_data():
 ###################################
 # FUNCTION CALLS
 
-connect_to_db(app)
+# connect_to_db(app)
 
-# books_updated = fetch_book_metadata()
+# fetch_book_metadata()
 
 
 

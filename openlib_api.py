@@ -12,7 +12,7 @@ def fetch_openlib_subject_info():
 
     # get ISBNs of books that need subject info
     need_subjects = Book.query.filter(Book.get_subjects==1, Book.isbn!='0').all()
-    # print len(need_subjects)
+    print "need subjects for:", len(need_subjects)
 
     subject_dict = {}
     openlib_count = 0
@@ -29,10 +29,9 @@ def fetch_openlib_subject_info():
                 categories = book_info[current_key]['subjects']
                 
                 # save categories in subject table; mark source as google-books
-                # maybe make this its own function?
                 for category in categories:
                     category = category['name'].lower()
-                    print "category:", category, type(category)
+                    # print "category:", category, type(category)
 
                     is_subject = Subject.query.filter_by(subject=category).first()
                     if is_subject == None:
@@ -43,8 +42,8 @@ def fetch_openlib_subject_info():
                         subject_dict[book.book_id].append(category)
                     else:
                         subject_dict[book.book_id] = [category]
+    print "retrieved subjects for:", openlib_count
     db.session.commit() 
-    print openlib_count
     return subject_dict
 
 

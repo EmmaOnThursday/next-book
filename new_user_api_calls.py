@@ -9,7 +9,7 @@ goodreads_key=os.environ['GOODREADS_KEY']
 goodreads_secret=os.environ['GOODREADS_SECRET']
 
 # get user id (this will be via OAuth probably)
-gr_user_id = "16767050"
+# gr_user_id = "16767050"
 
 
 def get_shelves(gr_user_id):
@@ -86,13 +86,33 @@ def add_book_to_library(book_list):
     db.session.commit()
 
 
+###### GET ADDITIONAL BOOK METADATA ######
+def fetch_book_data():
+    """Based on book's Goodreads ID, fetch language & original publication year.
+    Uses GR method book.show; saves data to library table."""
+
+    to_update = Book.query.filter((Book.language.is_(None)) | (Book.original_pub_year.is_(None))).all()   
+
+    # for book in need_language:
+    for book in to_update:
+        response = requests.get("https://www.goodreads.com/book/show/%s?key=%s&format=xml" % (book.goodreads_bid, goodreads_key))
+        parsed_response = xmltodict.parse(response.content)
+        book_info = parsed_response['GoodreadsResponse']
+        book.original_pub_year = int(book_info['book']['work']['original_publication_year']['#text'])
+        book.language = book_info['book']['language_code']
+        db.session.add(book)
+
+    db.session.commit()
+
+
+
 
 ###### ADD USERBOOK ######
 def add_userbook_to_userbooks(book_list, gr_user_id):
     """Add a new userbook to the userbooks table."""
     
     current_user = User.query.filter_by(goodreads_uid=gr_user_id).one()
-    print len(book_list)
+    # print len(book_list)
 
     for item in book_list:
         book = item[1] 
@@ -104,6 +124,7 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
         current_isbn = book_info['isbn13']
 
         #set status
+        # ADD: if book has a rating, give it the status 'read'
         if shelf in ['read', 'currently-reading']:
             status = 'read'
         elif shelf == 'to-read':
@@ -113,14 +134,14 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
 
         # try to get book from library with goodreads ID
         library_record = Book.query.filter_by(goodreads_bid=gr_bid).first()
-        print type(library_record)
+        # print type(library_record)
 
         # if book does not exist w/ goodreads id, try to get it with ISBN
         if not library_record:
-            print "reached line 138"
+            # print "reached line 138"
             if len(current_isbn) == 13:
                 library_record = db.session.query(Book).filter_by(isbn=current_isbn).first()
-                print "reached line 139"
+                # print "reached line 139"
         if not library_record:
             print "Failed to record user rating for ", book_list[1][1]['book']['title'], "user = ", current_user.email
         else:
@@ -143,16 +164,16 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
 ###################################
 # FUNCTION CALLS
 
-connect_to_db(app)
+# connect_to_db(app)
 
-shelves = get_shelves(gr_user_id)
+# shelves = get_shelves(gr_user_id)
 
-book_list = get_books_from_shelves(shelves)
+# book_list = get_books_from_shelves(shelves)
 
-# check if book in library; if not, add to library
-add_book_to_library(book_list)
+# # check if book in library; if not, add to library
+# add_book_to_library(book_list)
 
-# add book to UserBook table
-add_userbook_to_userbooks(book_list, gr_user_id)
+# # add book to UserBook table
+# add_userbook_to_userbooks(book_list, gr_user_id)
 
 
