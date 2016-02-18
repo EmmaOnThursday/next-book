@@ -22,21 +22,21 @@ def fetch_google_books_categories():
         if len(book.isbn) == 13:
             current_isbn = book.isbn
             book_data = requests.get("https://www.googleapis.com/books/v1/volumes?q=isbn:%s&key=%s" % (current_isbn, GOOGLE_API_KEY)).json()
-            
+            source = 'GoogleBooks'
             if book_data.get('items'):
                 googlebooks_count += 1 
                 if book_data['items'][0]['volumeInfo'].get('categories', None):
                     subjects = book_data['items'][0]['volumeInfo']['categories']
                 
-                # save categories in subject table; mark source as google-books
-                # pass in book object as a parameter; make a stand-alone function
-                    for category in subjects:
-                        category = category.lower()
+                # # save categories in subject table; mark source as google-books
+                # # pass in book object as a parameter; make a stand-alone function
+                #     for category in subjects:
+                #         category = category.lower()
 
-                        is_subject = Subject.query.filter_by(subject=category).first()
-                        if is_subject == None:
-                            subject = Subject(subject=category, source='GoogleBooks')
-                            db.session.add(subject)
+                #         is_subject = Subject.query.filter_by(subject=category).first()
+                #         if is_subject == None:
+                #             subject = Subject(subject=category, source='GoogleBooks')
+                #             db.session.add(subject)
 
                         # add each subject to a dictionary of bookID & list of subject
                         if subject_dict.get(book.book_id, None):
