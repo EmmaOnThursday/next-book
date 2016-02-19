@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+ {% block title %}
+ NextBook
+ {% endblock %}
+
+
+{% block content %}
+
+<h3>Welcome, Emma!</h3>
+<br>
+Email: {{User.email}}
+<br>
+You're set up to receive recommendations every {{User.rec_frequency}} day(s).
+<br>
+
+{% endblock %}

@@ -1,18 +1,27 @@
-{% extend base %}
+{% extends 'base.html' %}
 {% block content %}
-<div>
-    //fancy div that displays today's recommendation
+
+
+<div id="today_rec">
+<h3>Today's Recommendation</h3>
+<p>To Kill a Mockingbird</p>
 </div>
 
 
 
-// list of all historical recommendations
-// include: title, author, rec date, response buttons
+<!-- 
+list of all historical recommendations
+include: title, author, rec date, response buttons -->
 
-<ol>
-    <li></li>
-</ol>
+<h3>Previous Recommendations</h3>
 
-
+{% for book in show_recs %}
+    <div>
+        <p>{{book}}<button>I'll read this now!</button> <button>I'll read this later</button> <button>Ew no.</button> </p>
+        Already read this one? <a href='#'>Rate this book on Goodreads!</a>
+        <!-- link should go to book.goodreads_url -->
+    </div>
+    <br>
+{% endfor %}
 
 {% endblock %}

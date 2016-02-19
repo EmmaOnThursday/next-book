@@ -1,0 +1,22 @@
+body {
+    font-family: sans-serif;
+}
+
+h2 {
+    font-family: sans-serif;
+}
+
+#today_rec {
+    border: 2px solid black;
+    height: 200px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/*#shield {
+    height:70%;
+}
+
+.navbar-header{
+    height: 100px;
+}*/
