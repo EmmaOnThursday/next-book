@@ -3,8 +3,9 @@
 import datetime as dt
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, redirect, request, flash, session, url_for
-# from flask_debugtoolbar import DebugToolbarExtension
+from flask_debugtoolbar import DebugToolbarExtension
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
+from sqlalchemy import desc
 
 
 
@@ -27,27 +28,58 @@ def index():
     return render_template("home.html")
 
 
-@app.route("/sign-up")
+@app.route("/sign-up", methods=['GET', 'POST'])
 def sign_up():
     """For new users only: sign-up page."""  
 
-    return render_template("sign-up.html")
+    # if form has been submitted...
+    if request.method == 'POST':
+        #save all variables from form
+        email = request.form.get('email')
+        password  = request.form.get('password')
+        goodreads_uid = int(request.form.get('goodreads_uid'))
+        rec_frequency = int(request.form.get('rec_frequency'))
+
+        # try to instantiate user based on email from form
+        user = User.query.filter(User.email == email).all()
+
+        # if user already in DB, redirect to login page
+        if user != []:
+            flash("Looks like you've already signed up! Please log in.")
+            return redirect(url_for('login'))
+        
+        # if user does not exist, create & commit to DB
+        else:
+            new_user = User(email=email, password=password, 
+                goodreads_uid=goodreads_uid, rec_frequency=rec_frequency,
+                sign_up_date=dt.datetime.now(), paused=0)
+            print new_user
+            # db.session.add(new_user)
+            # db.session.commit()
+            flash("Welcome to NextBook!")
+            return redirect(url_for('loading'))
+
+#### NEED TO CALL ALL NEW USER FUNCTIONS HERE ####
+
+    return render_template('sign-up.html')
 
 
-@app.route("/recs-loading")
+
+
+
+@app.route("/loading")
 def loading():
     """For new users only: waiting for recommendations to generate."""
-    # cute gif here.
-
+    
     return render_template("loading.html")
+
+
 
 
 @app.route("/account")
 def account_page():
     """Account preferences page."""
-    # pause account
-    # change rec frequency
-    # change email, pw, etc
+    # pause account, change rec frequency, change email, pw, etc
     current_user = User.query.get(current_user_id)
     status = 0
     if current_user.paused == 1:
@@ -56,34 +88,50 @@ def account_page():
     return render_template("account.html", User=current_user, status=status)
 
 
-# @app.route("/todays-rec")
-# def  
-#     """Landing page after login: displays today's recommendation."""
-#     # provides today's rec and... ?
-
 
 @app.route("/recommendations")
 def recommendations():
-    """List of all previous recommendations."""
-    
-    # show_recs = Recommendation.query.filter(Recommendation.user_id == current_user_id, 
-    #     Recommendation.date_provided < today).all()
+    """List of all recommendations."""
 
     # link to each rec preview page
     # allows users to provide feedback on rec, & view/change previous feedback
-    show_recs = ['War & Peace', 'Little Women']
+    # recs_to_show = ['War & Peace', 'Little Women']
+    print "###########", current_user_id
+    current_user = User.query.get(1)
+    query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(), 
+        Recommendation.userbook.has(user_id=current_user_id))
+    recs_to_show=query.order_by(desc(Recommendation.date_provided)).all()
 
-    return render_template("recommendation-list.html", show_recs=show_recs)
+
+    return render_template("recommendation-list.html", recs_to_date=recs_to_show)
+
 
 
 @app.route("/recommendations/<int:rec_id>")
-def rec_details():
+def rec_details(rec_id):
     """Provides details on each specific recommendation."""
-    # provides preview of book text
-    # gives details of book (author, links to other pages, etc)
+    # gives details of book (author, links to other pages, etc) & link to book/book preview
     # allows users to provide feedback on rec, & view/change previous feedback
 
-    return render_template("recommendation-detail.html")
+    current_rec = Recommendation.query.get(rec_id)
+
+    return render_template("recommendation-detail.html", current_rec=current_rec)
+
+
+@app.route("/recommendations/<int:rec_id>/user-feedback", methods=['POST', 'GET'])
+def record_user_feedback(rec_id):
+    """Takes in user feedback from recommendations & saves to Postgres."""
+
+    # extract form info
+    response = request.form.get(response)
+    current_rec = Recommendation.query.get(rec_id)
+    current_rec.response = response # get response from user input
+
+    db.session.add(current_rec)
+    db.session.commit()
+
+    # how to redirect to url where user came from?
+    # return redirect(url_for('/recommendations'))
 
 
 if __name__ == "__main__":
@@ -94,7 +142,7 @@ if __name__ == "__main__":
     connect_to_db(app)
 
     # Use the DebugToolbar
-    # DebugToolbarExtension(app)
+    DebugToolbarExtension(app)
 
     app.run()
 

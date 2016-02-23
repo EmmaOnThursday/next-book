@@ -15,13 +15,47 @@ include: title, author, rec date, response buttons -->
 
 <h3>Previous Recommendations</h3>
 
-{% for book in show_recs %}
+{% for rec in recs_to_date %}
     <div>
-        <p>{{book}}<button>I'll read this now!</button> <button>I'll read this later</button> <button>Ew no.</button> </p>
-        Already read this one? <a href='#'>Rate this book on Goodreads!</a>
-        <!-- link should go to book.goodreads_url -->
+        <a href="/recommendations/{{rec.rec_id}}"><h4>{{rec.userbook.book.title}}</h4></a> <br>
+        {{rec.userbook.book.author}}
+            <button class="btn-feedback btn-read-now">I'll read this now!</button> 
+            <button class="btn-feedback btn-read-later">I'll read this later</button> 
+            <button class="btn-feedback btn-reject">Ew no.</button> 
+        Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback btn-already-read">Rate this book on Goodreads!</button>
     </div>
     <br>
 {% endfor %}
+
+<script>
+
+
+function colorizeButton() {
+    // when page loads OR when user clicks a button
+    // colorize approprate button based on feedback
+}
+
+
+function serverRelay() {
+    // send status to server
+    if (this.class==="btn-read-now") {
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-now"}, colorizeButton);
+    } else if (this.class==="btn-read-later") {
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-later" }, colorizeButton);
+    } else if (this.class==="btn-reject") {
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"reject" }, colorizeButton);
+    } else if (this.class==="btn-already-read"){
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"already-read" }, colorizeButton);
+    }
+}
+    
+
+$(".btn-feedback").click(function() {
+    serverRelay();
+});
+
+
+</script>
+
 
 {% endblock %}

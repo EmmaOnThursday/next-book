@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<container>
+
+Please enter the information below to begin receiving book recommendations!
+
+<form action="/sign-up" method="POST">
+    <label>Email: <input type="text" name="email"></label>
+    <br>
+    <label>Password: <input type="password" name="password"></label>
+    <br>
+    <label>GoodReads User Id: <input type="text" name="goodreads_uid"></label>
+    <br>
+    <label>How frequently would you like new book recommendations? 
+        <br>Every<input type="number" name="rec_frequency" min="1" max="5" step="1"> days.</label>
+    <br>
+    <br>
+    <input type="submit" value="Sign up">
+
+</form>
+</container>
+
+{% endblock %}
