@@ -1,13 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
 
-
 <div id="today_rec">
+
+{% if today_rec %}
 <h3>Today's Recommendation</h3>
-<p>To Kill a Mockingbird</p>
+<p class='title'><a href="/recommendations/{{today_rec.rec_id}}">{{today_rec.userbook.book.title}}</a></p>
+{{today_rec.userbook.book.author}}
+
+{% else%}
+<h3>Your account is currently paused. <br> 
+    To unpause recommendations,  please visit your <a href='/account'>account page</a>.</h3>
+
+{% endif %}
+
 </div>
-
-
 
 <!-- 
 list of all historical recommendations
@@ -17,42 +24,57 @@ include: title, author, rec date, response buttons -->
 
 {% for rec in recs_to_date %}
     <div>
-        <a href="/recommendations/{{rec.rec_id}}"><h4>{{rec.userbook.book.title}}</h4></a> <br>
-        {{rec.userbook.book.author}}
-            <button class="btn-feedback btn-read-now">I'll read this now!</button> 
-            <button class="btn-feedback btn-read-later">I'll read this later</button> 
-            <button class="btn-feedback btn-reject">Ew no.</button> 
-        Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback btn-already-read">Rate this book on Goodreads!</button>
+        <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
+        by {{rec.userbook.book.author}} 
+        <br>
+        Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
+        <br>
+            <button class="btn-feedback read-now" data="{{rec.rec_id}}">I'll read this now!</button> 
+            <button class="btn-feedback read-later" data="{{rec.rec_id}}">I'll read this later</button> 
+            <button class="btn-feedback reject" data="{{rec.rec_id}}">I won't read this.</button> 
+            <br>
+        Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback already-read" data-rec="{{rec.rec_id}}">Rate this book on Goodreads!</button>
     </div>
     <br>
 {% endfor %}
 
+<script src="https://code.jquery.com/jquery.js"></script>
+
 <script>
 
 
-function colorizeButton() {
-    // when page loads OR when user clicks a button
-    // colorize approprate button based on feedback
+function colorizeButton(results) {
+    // console.log("Got into colorizeButton") ;
+    // console.log(results);
+    var buttonType = results['button'] ;
+    var recID = results['rec_id'] ;
+    // console.log(recID) ;
+    // console.log(buttonType) ;
+    $("."+buttonType+'[data='+recID+']').addClass('existing-feedback');
 }
 
+function serverRelay(event) {
+    // console.log("got into serverRelay function");
+    var rec_id_js = $(this).attr('data'); 
+    // console.log(rec_id_js);
+    thisClass = $(this).attr('class');
 
-function serverRelay() {
-    // send status to server
-    if (this.class==="btn-read-now") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-now"}, colorizeButton);
-    } else if (this.class==="btn-read-later") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-later" }, colorizeButton);
-    } else if (this.class==="btn-reject") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"reject" }, colorizeButton);
-    } else if (this.class==="btn-already-read"){
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"already-read" }, colorizeButton);
+    if (thisClass==="btn-feedback read-now") {
+        var responseData = {'response':'read-now', 'rec_id':rec_id_js} ; 
+    } else if (thisClass==="btn-feedback read-later") {
+        var responseData = {'response':'read-later', 'rec_id':rec_id_js} ; 
+    } else if (thisClass==="btn-feedback reject") {
+        var responseData = {'response':'reject', 'rec_id':rec_id_js} ; 
+    } else if (thisClass==="btn-feedback already-read"){
+        var responseData = {'response':'already-read', 'rec_id':rec_id_js} ; 
     }
-}
+     $.post("/recommendations/"+rec_id_js+"/user-feedback", responseData, colorizeButton);
     
+}
 
-$(".btn-feedback").click(function() {
-    serverRelay();
-});
+
+
+$(".btn-feedback").click(serverRelay);
 
 
 </script>

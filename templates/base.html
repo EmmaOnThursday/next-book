@@ -20,8 +20,8 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <!-- <img id="shield" src="static/img/shield.png"/> -->
       <a class="navbar-brand" href="/">NextBook</a>
+      <!-- <img id="shield" src="static/img/shield.png"/>  -->
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -30,18 +30,18 @@
       <ul class="nav navbar-nav">
       </ul>
     
-
-<!--       <ul class="nav navbar-nav navbar-right">
+      <ul class="nav navbar-nav navbar-right">
         <li><a data-toggle="modal" data-target="#myModal">Login</a></li>
       </ul>
- -->
+
     <ul class="nav navbar-nav navbar-right">
         <li><a href="/recommendations">Recommendations</a></li>
         <li><a href="/account">Account</a></li>
     </ul>
 
+
 <!-- Modal -->
-<!-- <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -57,16 +57,31 @@
       </div>
     </div>
   </div>
-</div> -->
+</div>
 
 
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
     
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class=flashes>
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 
 
-    {% block content %} put your content here {% endblock %}
+{% block content %} 
+
+put your content here 
+
+{% endblock %}
+
+
 <script src="http://code.jquery.com/jquery.js"></script>
 
 </body>

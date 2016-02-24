@@ -13,10 +13,26 @@ h2 {
     vertical-align: middle;
 }
 
-/*#shield {
-    height:70%;
+.title{
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
 }
 
-.navbar-header{
-    height: 100px;
+#shield {
+    height: 50px;
+    width: 50px;
+    text-align: inline;
+}
+
+.existing-feedback {
+    background-color: red;
+    font-weight: bolder;
+    border: 
+}
+
+
+
+/*.navbar-header{
+    height: px;
 }*/

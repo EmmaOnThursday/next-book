@@ -1,23 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
 
+
+
 <div>
-    Title: {{current_rec.userbook.book.title}} <br>
-    Author: {{current_rec.userbook.book.author}} <br>
+    <a href="/recommendations/{{rec.rec_id}}"><h4>{{rec.userbook.book.title}}</h4></a>
+    <img src="{{rec.userbook.book.img_url}}"/> <br> <br>
 
-    <button class="btn-feedback btn-read-now" data-book="{{rec.userbook.book_id}}">I'll read this now!</button> 
-    <button class="btn-feedback btn-read-later" data-book="{{rec.userbook.book_id}}">I'll read this later</button> 
-    <button class="btn-feedback btn-reject" data-book="{{rec.userbook.book_id}}">Ew no.</button> 
-    Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback btn-already-read" data-book="{{rec.userbook.book_id}}">Rate this book on Goodreads!</button>
+    by {{rec.userbook.book.author}} 
+    <br>
+    Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
+    <br>
+    <br>
+        <button class="btn-feedback btn-read-now">I'll read this now!</button> 
+        <button class="btn-feedback btn-read-later">I'll read this later</button> 
+        <button class="btn-feedbac" btn-reje"t">Ew no.</button> 
+        <br>
+    Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback btn-already-read">Rate this book on Goodreads!</button>
 
-    Preview: {{currentrec.userbook.book.preview}}
-
+<!-- Preview: {{rec.userbook.book.preview}} -->
 
 
 </div>
 
-
-
+<script src="https://code.jquery.com/jquery.js"></script>
 <script>
 
 
@@ -30,13 +36,13 @@ function colorizeButton() {
 function serverRelay() {
     // send status to server
     if (this.class==="btn-read-now") {
-        $.post("/rec-response", {'book_id': this.attr("data-book"), 'response':"read-now"}, colorizeButton);
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-now"}, colorizeButton);
     } else if (this.class==="btn-read-later") {
-        $.post("/rec-response", {'book_id': this.attr("data-book"), 'response':"read-later" }, colorizeButton);
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-later" }, colorizeButton);
     } else if (this.class==="btn-reject") {
-        $.post("/rec-response", {'book_id': this.attr("data-book"), 'response':"reject" }, colorizeButton);
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"reject" }, colorizeButton);
     } else if (this.class==="btn-already-read"){
-        $.post("/rec-response", {'book_id': this.attr("data-book"), 'response':"already-read" }, colorizeButton);
+        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"already-read" }, colorizeButton);
     }
 }
     

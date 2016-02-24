@@ -2,11 +2,10 @@
 
 import datetime as dt
 from jinja2 import StrictUndefined
-from flask import Flask, render_template, redirect, request, flash, session, url_for
+from flask import Flask, render_template, redirect, request, flash, session, url_for, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 from sqlalchemy import desc
-
 
 
 app = Flask(__name__)
@@ -91,19 +90,23 @@ def account_page():
 
 @app.route("/recommendations")
 def recommendations():
-    """List of all recommendations."""
+    """List of all recommendations; allows users to leave feedback on recommendations."""
 
-    # link to each rec preview page
-    # allows users to provide feedback on rec, & view/change previous feedback
-    # recs_to_show = ['War & Peace', 'Little Women']
-    print "###########", current_user_id
     current_user = User.query.get(1)
+
     query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(), 
-        Recommendation.userbook.has(user_id=current_user_id))
-    recs_to_show=query.order_by(desc(Recommendation.date_provided)).all()
+        Recommendation.userbook.has(user_id=current_user_id), Recommendation.response !=)
 
+    recs_to_date=query.order_by(desc(Recommendation.date_provided)).all()
 
-    return render_template("recommendation-list.html", recs_to_date=recs_to_show)
+    if recs_to_date[0].date_provided.date() == dt.date.today():
+        recs_to_show=recs_to_date[1:]
+        today_rec = recs_to_date[0]
+    else:
+        recs_to_show=recs_to_date
+        today_rec=False
+
+    return render_template("recommendation-list.html", recs_to_date=recs_to_show, today_rec=today_rec)
 
 
 
@@ -115,23 +118,29 @@ def rec_details(rec_id):
 
     current_rec = Recommendation.query.get(rec_id)
 
-    return render_template("recommendation-detail.html", current_rec=current_rec)
+    return render_template("recommendation-detail.html", rec=current_rec)
 
 
-@app.route("/recommendations/<int:rec_id>/user-feedback", methods=['POST', 'GET'])
+@app.route("/recommendations/<int:rec_id>/user-feedback", methods=['POST'])
 def record_user_feedback(rec_id):
     """Takes in user feedback from recommendations & saves to Postgres."""
 
-    # extract form info
-    response = request.form.get(response)
+    print "############# got to route"
+    response = request.form.get('response')
+    print response
+    rec_id = request.form.get('rec_id')
+    print rec_id
     current_rec = Recommendation.query.get(rec_id)
     current_rec.response = response # get response from user input
 
     db.session.add(current_rec)
     db.session.commit()
 
-    # how to redirect to url where user came from?
-    # return redirect(url_for('/recommendations'))
+    button_to_color = {'rec_id': rec_id, 'button': response}
+
+    return jsonify(button_to_color)
+
+
 
 
 if __name__ == "__main__":
