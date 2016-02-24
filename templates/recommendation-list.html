@@ -23,15 +23,15 @@ include: title, author, rec date, response buttons -->
 <h3>Previous Recommendations</h3>
 
 {% for rec in recs_to_date %}
-    <div>
+    <div class="each-rec">
         <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
         by {{rec.userbook.book.author}} 
         <br>
         Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
         <br>
-            <button class="btn-feedback read-now" data="{{rec.rec_id}}">I'll read this now!</button> 
-            <button class="btn-feedback read-later" data="{{rec.rec_id}}">I'll read this later</button> 
-            <button class="btn-feedback reject" data="{{rec.rec_id}}">I won't read this.</button> 
+            <button class="btn-feedback read-now {{'existing-feedback' if rec.response =='read-now' else ''}}" data="{{rec.rec_id}}">I'll read this now!</button> 
+            <button class="btn-feedback read-later {{'existing-feedback' if rec.response =='read-later' else ''}}" data="{{rec.rec_id}}">I'll read this later</button> 
+            <button class="btn-feedback reject {{'existing-feedback' if rec.response =='reject' else ''}}" data="{{rec.rec_id}}">I won't read this.</button> 
             <br>
         Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback already-read" data-rec="{{rec.rec_id}}">Rate this book on Goodreads!</button>
     </div>
@@ -43,35 +43,32 @@ include: title, author, rec date, response buttons -->
 <script>
 
 
-function colorizeButton(results) {
-    // console.log("Got into colorizeButton") ;
-    // console.log(results);
+function colorizeButtons(results) {
+
     var buttonType = results['button'] ;
     var recID = results['rec_id'] ;
-    // console.log(recID) ;
-    // console.log(buttonType) ;
+
     $("."+buttonType+'[data='+recID+']').addClass('existing-feedback');
+
+    $("."+buttonType+'[data='+recID+']').siblings().removeClass('existing-feedback') ;
 }
 
 function serverRelay(event) {
-    // console.log("got into serverRelay function");
+    
     var rec_id_js = $(this).attr('data'); 
-    // console.log(rec_id_js);
-    thisClass = $(this).attr('class');
 
-    if (thisClass==="btn-feedback read-now") {
+    if ($(this).hasClass('read-now')) {
         var responseData = {'response':'read-now', 'rec_id':rec_id_js} ; 
-    } else if (thisClass==="btn-feedback read-later") {
+    } else if ($(this).hasClass('read-later')) {
         var responseData = {'response':'read-later', 'rec_id':rec_id_js} ; 
-    } else if (thisClass==="btn-feedback reject") {
+    } else if ($(this).hasClass('reject')) {
         var responseData = {'response':'reject', 'rec_id':rec_id_js} ; 
-    } else if (thisClass==="btn-feedback already-read"){
+    } else if ($(this).hasClass('already-read')) {
         var responseData = {'response':'already-read', 'rec_id':rec_id_js} ; 
-    }
-     $.post("/recommendations/"+rec_id_js+"/user-feedback", responseData, colorizeButton);
+    }  
+    $.post("/recommendations/"+rec_id_js+"/user-feedback", responseData, colorizeButtons);
     
 }
-
 
 
 $(".btn-feedback").click(serverRelay);

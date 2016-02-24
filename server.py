@@ -95,7 +95,7 @@ def recommendations():
     current_user = User.query.get(1)
 
     query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(), 
-        Recommendation.userbook.has(user_id=current_user_id), Recommendation.response !=)
+        Recommendation.userbook.has(user_id=current_user_id))
 
     recs_to_date=query.order_by(desc(Recommendation.date_provided)).all()
 

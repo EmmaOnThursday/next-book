@@ -12,49 +12,50 @@
     Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
     <br>
     <br>
-        <button class="btn-feedback btn-read-now">I'll read this now!</button> 
-        <button class="btn-feedback btn-read-later">I'll read this later</button> 
-        <button class="btn-feedbac" btn-reje"t">Ew no.</button> 
-        <br>
-    Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback btn-already-read">Rate this book on Goodreads!</button>
+        <button class="btn-feedback read-now {{'existing-feedback' if rec.response =='read-now' else ''}}" data="{{rec.rec_id}}">I'll read this now!</button> 
+            <button class="btn-feedback read-later {{'existing-feedback' if rec.response =='read-later' else ''}}" data="{{rec.rec_id}}">I'll read this later</button> 
+            <button class="btn-feedback reject {{'existing-feedback' if rec.response =='reject' else ''}}" data="{{rec.rec_id}}">I won't read this.</button> 
+            <br>
+        Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn-feedback already-read" data-rec="{{rec.rec_id}}">Rate this book on Goodreads!</button>
 
 <!-- Preview: {{rec.userbook.book.preview}} -->
-
-
 </div>
 
 <script src="https://code.jquery.com/jquery.js"></script>
+
 <script>
 
 
-function colorizeButton() {
-    // when page loads OR when user clicks a button
-    // colorize approprate button based on feedback
+function colorizeButtons(results) {
+
+    var buttonType = results['button'] ;
+    var recID = results['rec_id'] ;
+
+    $("."+buttonType+'[data='+recID+']').addClass('existing-feedback');
+
+    $("."+buttonType+'[data='+recID+']').siblings().removeClass('existing-feedback') ;
 }
 
-
-function serverRelay() {
-    // send status to server
-    if (this.class==="btn-read-now") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-now"}, colorizeButton);
-    } else if (this.class==="btn-read-later") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"read-later" }, colorizeButton);
-    } else if (this.class==="btn-reject") {
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"reject" }, colorizeButton);
-    } else if (this.class==="btn-already-read"){
-        $.post("/recommendations/<int:rec_id>/user-feedback", {'response':"already-read" }, colorizeButton);
-    }
-}
+function serverRelay(event) {
     
+    var rec_id_js = $(this).attr('data'); 
 
-$(".btn-feedback").click(function() {
-    serverRelay();
-});
+    if ($(this).hasClass('read-now')) {
+        var responseData = {'response':'read-now', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('read-later')) {
+        var responseData = {'response':'read-later', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('reject')) {
+        var responseData = {'response':'reject', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('already-read')) {
+        var responseData = {'response':'already-read', 'rec_id':rec_id_js} ; 
+    }  
+    $.post("/recommendations/"+rec_id_js+"/user-feedback", responseData, colorizeButtons);
+    
+}
 
-// when feedback exists for recommendation, 
-// colorize appropriate button
+
+$(".btn-feedback").click(serverRelay);
 
 
 </script>
-
 {% endblock %}
