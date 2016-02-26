@@ -1,31 +1,29 @@
 {% extends 'base.html' %}
+
+
 {% block content %}
 
 <div id="today_rec">
 
-{% if today_rec %}
-<h3>Today's Recommendation</h3>
-<p class='title'><a href="/recommendations/{{today_rec.rec_id}}">{{today_rec.userbook.book.title}}</a></p>
-{{today_rec.userbook.book.author}} <br><br>
-<button class="btn-feedback read-now {{'existing-feedback' if today_rec.response =='read-now' else ''}}" data="{{today_rec.rec_id}}">I'll read this now!</button> 
-            <button class="btn-feedback read-later {{'existing-feedback' if today_rec.response =='read-later' else ''}}" data="{{today_rec.rec_id}}">I'll read this later</button> 
-            <button class="btn-feedback reject {{'existing-feedback' if today_rec.response =='reject' else ''}}" data="{{today_rec.rec_id}}">I won't read this.</button> 
-            <br> 
-        Already read this one? <button href='{{today_rec.userbook.book.goodreads_url}}' class="btn-feedback already-read" data-rec="{{today_rec.rec_id}}">Rate this book on Goodreads!</button>
+    {% if today_rec %}
+        <h3>Today's Recommendation</h3>
+        <p class='title'><a href="/recommendations/{{today_rec.rec_id}}">{{today_rec.userbook.book.title}}</a></p>
+        {{today_rec.userbook.book.author}} <br><br>
+        <button class="btn-feedback read-now {{'existing-feedback' if today_rec.response =='read-now' else ''}}" data="{{today_rec.rec_id}}">I'll read this now!</button> 
+        <button class="btn-feedback read-later {{'existing-feedback' if today_rec.response =='read-later' else ''}}" data="{{today_rec.rec_id}}">I'll read this later</button> 
+        <button class="btn-feedback reject {{'existing-feedback' if today_rec.response =='reject' else ''}}" data="{{today_rec.rec_id}}">I won't read this.</button> 
+        <br> 
+        Already read this one? 
+        <button href='{{today_rec.userbook.book.goodreads_url}}' class="btn-feedback already-read" data-rec="{{today_rec.rec_id}}">Rate this book on Goodreads!</button>
 
+    {% else%}
+        <h3>Your account is currently paused. <br> 
+        To unpause recommendations,  please visit your <a href='/account'>account page</a>.</h3>
 
-
-{% else%}
-<h3>Your account is currently paused. <br> 
-    To unpause recommendations,  please visit your <a href='/account'>account page</a>.</h3>
-
-{% endif %}
+    {% endif %}
 
 </div>
 
-<!-- 
-list of all historical recommendations
-include: title, author, rec date, response buttons -->
 
 <h3>Previous Recommendations</h3>
 
@@ -44,6 +42,8 @@ include: title, author, rec date, response buttons -->
     </div>
     <br>
 {% endfor %}
+
+
 
 <script src="https://code.jquery.com/jquery.js"></script>
 

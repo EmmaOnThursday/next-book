@@ -94,7 +94,7 @@ def account_page():
     current_user = User.query.get(current_user_id)
     status = 0
     if current_user.paused == 1:
-        status = "You paused your account on "+current_user.paused_date
+        status = "You paused your account on "+ str(current_user.paused_date)
 
     return render_template("account.html", User=current_user, status=status)
 
@@ -125,12 +125,12 @@ def recommendations():
 @app.route("/recommendations/<int:rec_id>")
 def rec_details(rec_id):
     """Provides details on each specific recommendation."""
-    # gives details of book (author, links to other pages, etc) & link to book/book preview
-    # allows users to provide feedback on rec, & view/change previous feedback
-
+    
     current_rec = Recommendation.query.get(rec_id)
+    print current_rec.response
 
     return render_template("recommendation-detail.html", rec=current_rec)
+
 
 
 @app.route("/recommendations/<int:rec_id>/user-feedback", methods=['POST'])
@@ -139,7 +139,7 @@ def record_user_feedback(rec_id):
 
     response = request.form.get('response')
     if response=='read-now':
-        current_user = User.query.get(current_user_id).one()
+        current_user = User.query.get(current_user_id)
         current_user.paused = 1
         current_user.paused_date = dt.datetime.today()
         db.session.add(current_user)
@@ -163,7 +163,8 @@ def generate_recommendation_delivery_dates():
 
     if active_users:
         for user in active_users:
-            undelivered_recs = Recommendation.query.filter(Recommendation.userbook.has(UserBook.user_id==user.user_id), 
+            undelivered_recs = Recommendation.query.filter(
+                Recommendation.userbook.has(UserBook.user_id==user.user_id), 
                 Recommendation.date_provided == None).all()
             today = random.choice(undelivered_recs)
             today.date_provided = dt.date.today()

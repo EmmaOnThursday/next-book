@@ -12,5 +12,8 @@ Email: {{User.email}}
 <br>
 You're set up to receive recommendations every {{User.rec_frequency}} day(s).
 <br>
+{% if User.paused==1 %}
+    <p>Your account is currently paused. Click here to resume recommendations!</p>
+{% endif %}
 
 {% endblock %}
