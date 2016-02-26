@@ -14,7 +14,9 @@ class User(db.Model):
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    email = db.Column(db.String, unique=True, nullable=False)
+    f_name = db.Column(db.String(30), nullable=True)
+    l_name = db.Column(db.String(50), nullable=True)
+    email = db.Column(db.String(50), unique=True, nullable=False)
     goodreads_uid = db.Column(db.Integer, nullable=False)
     password = db.Column(db.String(15), nullable=False)
     rec_frequency = db.Column(db.Integer, nullable=False, default=1)

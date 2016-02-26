@@ -233,11 +233,26 @@ add_predictions_to_database(to_recommend)
 
 
 def create_recommendations(dataframe):
+    """Add recommendations to database. """
+    recs_created = 0
     for i, row in dataframe.iterrows():
         current_userbook = UserBook.query.filter(UserBook.book_id==row['book_id'], UserBook.user_id==user_id).first()
         new_recommendation = Recommendation(date_created=datetime.now(), userbook_id=current_userbook.userbook_id)
         db.session.add(new_recommendation)
+        recs_created += 1
     db.session.commit()
 
-create_recommendations(to_recommend)
+    return recs_created
+
+def user_alert(new_recs):
+    if new_recs > 0:
+        # send email to user saying recommendations are complete
+        print "New recs added to DB:", new_recs
+    else:
+        # email nextbook recommends  with error message
+        print "no recs created for this user"
+
+new_recs = create_recommendations(to_recommend)
+user_alert(new_recs)
+
 

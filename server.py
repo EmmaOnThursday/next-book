@@ -1,20 +1,29 @@
 """ Server for NextBook """
 
 import datetime as dt
+from celery import Celery
 from jinja2 import StrictUndefined
 from flask import Flask, render_template, redirect, request, flash, session, url_for, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 from sqlalchemy import desc
+import random
 
 
 app = Flask(__name__)
+
+# Celery configuration
+app.config['CELERY_BROKER_URL'] = 'sqla+postgresql:///nextbook'
+# app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
 
 # Required to use Flask sessions and the debug toolbar
 app.secret_key = "ABC"
 
 # Prevents undefined variables in Jinja from failing silently.
-# Instead of that horrible thing, raies an error.
 app.jinja_env.undefined = StrictUndefined
 
 current_user_id = 1
@@ -34,6 +43,8 @@ def sign_up():
     # if form has been submitted...
     if request.method == 'POST':
         #save all variables from form
+        f_name = request.form.get('f_name')
+        l_name = request.form.get('l_name')
         email = request.form.get('email')
         password  = request.form.get('password')
         goodreads_uid = int(request.form.get('goodreads_uid'))
@@ -50,11 +61,12 @@ def sign_up():
         # if user does not exist, create & commit to DB
         else:
             new_user = User(email=email, password=password, 
+                f_name=f_name, l_name=l_name,
                 goodreads_uid=goodreads_uid, rec_frequency=rec_frequency,
                 sign_up_date=dt.datetime.now(), paused=0)
             print new_user
-            # db.session.add(new_user)
-            # db.session.commit()
+            db.session.add(new_user)
+            db.session.commit()
             flash("Welcome to NextBook!")
             return redirect(url_for('loading'))
 
@@ -125,11 +137,14 @@ def rec_details(rec_id):
 def record_user_feedback(rec_id):
     """Takes in user feedback from recommendations & saves to Postgres."""
 
-    print "############# got to route"
     response = request.form.get('response')
-    print response
+    if response=='read-now':
+        current_user = User.query.get(current_user_id).one()
+        current_user.paused = 1
+        current_user.paused_date = dt.datetime.today()
+        db.session.add(current_user)
+        
     rec_id = request.form.get('rec_id')
-    print rec_id
     current_rec = Recommendation.query.get(rec_id)
     current_rec.response = response # get response from user input
 
@@ -141,7 +156,23 @@ def record_user_feedback(rec_id):
     return jsonify(button_to_color)
 
 
+# CELERY TASKS #
+@celery.task
+def generate_recommendation_delivery_dates():
+    active_users = User.query.filter(User.paused==0).all()
 
+    if active_users:
+        for user in active_users:
+            undelivered_recs = Recommendation.query.filter(Recommendation.userbook.has(UserBook.user_id==user.user_id), 
+                Recommendation.date_provided == None).all()
+            today = random.choice(undelivered_recs)
+            today.date_provided = dt.date.today()
+            # print today.rec_id
+            db.session.add(today)
+
+        db.session.commit()
+
+task = generate_recommendation_delivery_dates.apply_async()
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
