@@ -6,6 +6,14 @@ h2 {
     font-family: sans-serif;
 }
 
+#title-page {
+    text-align: center;
+    background-image: url("/static/img/book_heart_small.jpg");
+    vertical-align: middle;
+    color: #ffe5cc;
+    height:400px;
+}
+
 #today_rec {
     border: 2px solid black;
     height: 200px;
