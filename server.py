@@ -1,33 +1,47 @@
 """ Server for NextBook """
 
+import random
 import datetime as dt
-from celery import Celery
-from jinja2 import StrictUndefined
+import os
+
 from flask import Flask, render_template, redirect, request, flash, session, url_for, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
-from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 from sqlalchemy import desc
-import random
+from jinja2 import StrictUndefined
+from celery import Celery
+
+from scheduled_functions import scheduler, send_recommendation_email, generate_recommendation_delivery_dates
+from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
+from api_calls.new_user_api_calls import get_shelves, get_books_from_shelves, add_book_to_library, add_userbook_to_userbooks
 
 
 app = Flask(__name__)
 
-# Celery configuration
-app.config['CELERY_BROKER_URL'] = 'sqla+postgresql:///nextbook'
-# app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+# Prevents undefined variables in Jinja from failing silently.
+app.jinja_env.undefined = StrictUndefined
 
+# Celery setup
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
+# keys & secrets
+goodreads_key=os.environ['GOODREADS_KEY']
+goodreads_secret=os.environ['GOODREADS_SECRET']
 
 # Required to use Flask sessions and the debug toolbar
 app.secret_key = "ABC"
 
-# Prevents undefined variables in Jinja from failing silently.
-app.jinja_env.undefined = StrictUndefined
+# need to get user's GR id from oauth:
+# user Goodreads OAuth-ID API method
+# https://www.goodreads.com/api/auth_user
+# http method = get
+gr_user_id = "16767050"
 
+# after use has logged in:
+# get user id from session or whatever...
 current_user_id = 1
-today = dt.datetime.now()
 
 @app.route("/")
 def index():
@@ -56,7 +70,7 @@ def sign_up():
         # if user already in DB, redirect to login page
         if user != []:
             flash("Looks like you've already signed up! Please log in.")
-            return redirect(url_for('login'))
+            return redirect(url_for('index'))
         
         # if user does not exist, create & commit to DB
         else:
@@ -68,14 +82,28 @@ def sign_up():
             db.session.add(new_user)
             db.session.commit()
             flash("Welcome to NextBook!")
-            return redirect(url_for('loading'))
 
-#### NEED TO CALL ALL NEW USER FUNCTIONS HERE ####
+            return redirect(url_for('loading'))    
 
     return render_template('sign-up.html')
 
 
 
+# get user's books from Goodreads & create recommendations
+@celery.task
+def new_user_setup(gr_user_id):
+    shelves = get_shelves(gr_user_id)
+    book_list = get_books_from_shelves(shelves)
+    
+    # check if book in library; if not, add to library
+    add_book_to_library(book_list)
+    
+    # add book to UserBook table
+    add_userbook_to_userbooks(book_list, gr_user_id)
+
+    # get subjects for all new books
+    # generate recommendations
+    # return: send user an email
 
 
 @app.route("/loading")
@@ -156,25 +184,17 @@ def record_user_feedback(rec_id):
     return jsonify(button_to_color)
 
 
-# CELERY TASKS #
-@celery.task
-def generate_recommendation_delivery_dates():
-    active_users = User.query.filter(User.paused==0).all()
 
-    if active_users:
-        for user in active_users:
-            undelivered_recs = Recommendation.query.filter(
-                Recommendation.userbook.has(UserBook.user_id==user.user_id), 
-                Recommendation.date_provided == None).all()
-            today = random.choice(undelivered_recs)
-            today.date_provided = dt.date.today()
-            # print today.rec_id
-            db.session.add(today)
 
-        db.session.commit()
+#### APP MAINTENANCE ####
+# need to send emails to all users at noon
+# need to update database daily at midnight
+scheduler.start()
 
-task = generate_recommendation_delivery_dates.apply_async()
 
+
+
+#### FUNCTION CALLS ####
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
     # that we invoke the DebugToolbarExtension

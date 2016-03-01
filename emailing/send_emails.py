@@ -1,16 +1,9 @@
-# from celery import Celery
-# from flask import Flask, render_template, redirect, request, flash, session, url_for, jsonify
-# from flask_debugtoolbar import DebugToolbarExtension
-
 from server import app
-
+import smtplib
+import os
 import datetime as dt
 
 from model import Book, User, Recommendation, UserBook, connect_to_db, db
-
-import smtplib
-import os
-
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 

@@ -9,7 +9,7 @@ goodreads_key=os.environ['GOODREADS_KEY']
 goodreads_secret=os.environ['GOODREADS_SECRET']
 
 # get user id (this will be via OAuth probably)
-# gr_user_id = "16767050"
+gr_user_id = "16767050"
 
 
 def get_shelves(gr_user_id):
