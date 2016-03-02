@@ -6,6 +6,7 @@ blessings==1.6
 blinker==1.4
 bpython==0.15
 celery==3.1.20
+click==6.3
 curtsies==0.2.6
 DateTime==4.0.1
 email==4.0.2
@@ -29,7 +30,10 @@ Pygments==2.1.1
 python-dateutil==2.4.2
 pytz==2015.7
 rauth==0.7.2
+redis==2.10.5
 requests==2.9.1
+rq==0.5.6
+rq-scheduler==0.5.1
 scikit-learn==0.17
 scipy==0.17.0
 six==1.10.0

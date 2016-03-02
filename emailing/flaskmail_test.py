@@ -21,13 +21,13 @@ app.config.update(dict(
 mail=Mail(app)
 
 @app.route("/")
-def index():
+def mailer():
     msg = Message(
               subject='Hello',
            recipients=['emmamferguson@gmail.com'],
-           body="This is the email body.",
+           body="This is the email body.")
            # sender=os.environ.get('NEXTBOOK_GMAIL'))
-    print msg.sender
+    # print msg.sender
     with app.app_context():
         mail.send(msg)    
     return "Sent"

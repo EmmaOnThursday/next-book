@@ -8,7 +8,6 @@ from flask import Flask, render_template, redirect, request, flash, session, url
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import desc
 from jinja2 import StrictUndefined
-from celery import Celery
 
 # from scheduled_functions import scheduler, send_recommendation_email, generate_recommendation_delivery_dates
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
@@ -20,11 +19,6 @@ app = Flask(__name__)
 # Prevents undefined variables in Jinja from failing silently.
 app.jinja_env.undefined = StrictUndefined
 
-# Celery setup
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
 
 # keys & secrets
 goodreads_key=os.environ['GOODREADS_KEY']
@@ -42,6 +36,29 @@ gr_user_id = "16767050"
 # after use has logged in:
 # get user id from session or whatever...
 current_user_id = 1
+
+
+######### HELPER FUNCTIONS ######### 
+
+def new_user_setup(gr_user_id):
+    shelves = get_shelves(gr_user_id)
+    book_list = get_books_from_shelves(shelves)
+    
+    # check if book in library; if not, add to library
+    add_book_to_library(book_list)
+    
+    # add book to UserBook table
+    add_userbook_to_userbooks(book_list, gr_user_id)
+
+    # get subjects for all new books
+    # generate recommendations
+    # return: send user an email
+
+
+
+
+
+
 
 @app.route("/")
 def index():
@@ -90,20 +107,6 @@ def sign_up():
 
 
 # get user's books from Goodreads & create recommendations
-@celery.task
-def new_user_setup(gr_user_id):
-    shelves = get_shelves(gr_user_id)
-    book_list = get_books_from_shelves(shelves)
-    
-    # check if book in library; if not, add to library
-    add_book_to_library(book_list)
-    
-    # add book to UserBook table
-    add_userbook_to_userbooks(book_list, gr_user_id)
-
-    # get subjects for all new books
-    # generate recommendations
-    # return: send user an email
 
 
 @app.route("/loading")

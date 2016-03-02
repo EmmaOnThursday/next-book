@@ -159,7 +159,6 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
 ###################################
 # FUNCTION CALLS
 
-# connect_to_db(app)
 
 # shelves = get_shelves(gr_user_id)
 
