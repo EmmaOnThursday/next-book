@@ -2,7 +2,6 @@ import os
 import requests
 import pdb
 from model import Book, Subject, BookSubject, connect_to_db, db
-from server import app
 
 
 

@@ -2,7 +2,6 @@ import os
 import requests
 import pdb
 from model import Book, Subject, BookSubject, connect_to_db, db
-from server import app
 
 GOOGLE_API_KEY = os.environ['GOOGLE_API_KEY']
 
@@ -38,11 +37,11 @@ def fetch_google_books_categories():
                 #             subject = Subject(subject=category, source='GoogleBooks')
                 #             db.session.add(subject)
 
-                        # add each subject to a dictionary of bookID & list of subject
-                        if subject_dict.get(book.book_id, None):
-                            subject_dict[book.book_id].append(category)
-                        else:
-                            subject_dict[book.book_id] = [category]
+                    # add each subject to a dictionary of bookID & list of subject
+                    if subject_dict.get(book.book_id):
+                        subject_dict[book.book_id].append(category)
+                    else:
+                        subject_dict[book.book_id] = [category]
 
     print "Found subjects for x books:", googlebooks_count
     db.session.commit() 
@@ -70,8 +69,7 @@ def create_book_subjects(subject_dict):
 ###################################
 # FUNCTION CALLS
 
-connect_to_db(app)
 
-subject_dict = fetch_google_books_categories()
+# subject_dict = fetch_google_books_categories()
 
-create_book_subjects(subject_dict)
+# create_book_subjects(subject_dict)

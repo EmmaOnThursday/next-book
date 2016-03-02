@@ -10,7 +10,7 @@ from sqlalchemy import desc
 from jinja2 import StrictUndefined
 from celery import Celery
 
-from scheduled_functions import scheduler, send_recommendation_email, generate_recommendation_delivery_dates
+# from scheduled_functions import scheduler, send_recommendation_email, generate_recommendation_delivery_dates
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 from api_calls.new_user_api_calls import get_shelves, get_books_from_shelves, add_book_to_library, add_userbook_to_userbooks
 
@@ -189,7 +189,7 @@ def record_user_feedback(rec_id):
 #### APP MAINTENANCE ####
 # need to send emails to all users at noon
 # need to update database daily at midnight
-scheduler.start()
+# scheduler.start()
 
 
 

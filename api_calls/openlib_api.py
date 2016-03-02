@@ -2,7 +2,6 @@ import os
 import requests
 import pdb
 from model import Book, Subject, BookSubject, connect_to_db, db
-from server import app
 from googlebooks_api import create_book_subjects
 
 
@@ -50,11 +49,10 @@ def fetch_openlib_subject_info():
 ###################################
 # FUNCTION CALLS
 
-connect_to_db(app)
 
-subject_items = fetch_openlib_subject_info()
+# subject_items = fetch_openlib_subject_info()
 
-create_book_subjects(subject_items)
+# create_book_subjects(subject_items)
 
 
 

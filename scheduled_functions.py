@@ -5,7 +5,6 @@ import datetime as dt
 import os
 
 # app imports
-from server import app
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 
 # scheduler imports
@@ -22,23 +21,31 @@ from email.MIMEText import MIMEText
 
 
 # set up scheduler
-jobstores = {
-    'default': SQLAlchemyJobStore(url='postgresql:///nextbook')
-}
+def make_scheduler():
+    """Create scheduler object & add functions to it."""
+    jobstores = {
+        'default': SQLAlchemyJobStore(url='postgresql:///nextbook')
+    }
 
-executors = {
-    'default': ThreadPoolExecutor(20),
-    'processpool': ProcessPoolExecutor(5)
-}
+    executors = {
+        'default': ThreadPoolExecutor(20),
+        'processpool': ProcessPoolExecutor(5)
+    }
 
-job_defaults = {
-    'coalesce': False,
-    'max_instances': 3
-}
+    job_defaults = {
+        'coalesce': False,
+        'max_instances': 3
+    }
 
-scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
+    scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
+    
+    scheduler.add_job(generate_recommendation_delivery_dates, trigger='cron', hour='8', minute='1')
+    scheduler.add_job(send_recommendation_email, trigger='cron', hour='20')
+
+    return scheduler
 
 # define functions to schedule
+
 
 def generate_recommendation_delivery_dates():
     """For each user, 'deliver' one recommendation per day."""
@@ -87,12 +94,11 @@ def send_recommendation_email():
 
 
 #time is in UTC
-scheduler.add_job(generate_recommendation_delivery_dates, trigger='cron', hour='8', minute='1')
-scheduler.add_job(send_recommendation_email, trigger='cron', hour='20')
 
 
 ###### FUNCTION CALLS ###### 
 connect_to_db(app)
+scheduler = make_scheduler(functions_to_add)
 scheduler.start()
 # generate_recommendation_delivery_dates()
 # send_recommendation_email()

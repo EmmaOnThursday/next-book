@@ -3,7 +3,7 @@ import requests
 import xmltodict
 import pdb
 from model import Book, User, Recommendation, UserBook, connect_to_db, db
-from server import app
+
 
 goodreads_key=os.environ['GOODREADS_KEY']
 goodreads_secret=os.environ['GOODREADS_SECRET']
@@ -112,19 +112,15 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
     """Add a new userbook to the userbooks table."""
     
     current_user = User.query.filter_by(goodreads_uid=gr_user_id).one()
-    # print len(book_list)
 
     for item in book_list:
         book = item[1] 
         shelf = item[0]
         book_info = book['book']
         gr_bid = int(book_info['id']['#text'])
-        print "###############", gr_bid, type(gr_bid)
-        # pdb.set_trace()
         current_isbn = book_info['isbn13']
 
         #set status
-        # ADD: if book has a rating, give it the status 'read'
         if shelf in ['read', 'currently-reading']:
             status = 'read'
         elif shelf == 'to-read':
@@ -134,20 +130,19 @@ def add_userbook_to_userbooks(book_list, gr_user_id):
 
         # try to get book from library with goodreads ID
         library_record = Book.query.filter_by(goodreads_bid=gr_bid).first()
-        # print type(library_record)
 
         # if book does not exist w/ goodreads id, try to get it with ISBN
         if not library_record:
-            # print "reached line 138"
             if len(current_isbn) == 13:
                 library_record = db.session.query(Book).filter_by(isbn=current_isbn).first()
-                # print "reached line 139"
         if not library_record:
             print "Failed to record user rating for ", book_list[1][1]['book']['title'], "user = ", current_user.email
         else:
             new_volume = UserBook.query.filter(UserBook.user_id==current_user.user_id, UserBook.book_id == library_record.book_id).first()
 
             if not new_volume:
+                if book['rating'] != 0:
+                    status = 'read'
                 new_userbook = UserBook(user_id = current_user.user_id,
                                         book_id = library_record.book_id,
                                         gr_shelf_name = shelf, 

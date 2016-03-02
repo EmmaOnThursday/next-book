@@ -79,11 +79,11 @@ class UserBook(db.Model):
 
 
     book = db.relationship("Book",
-            backref=db.backref("userbooks"))
+            backref = db.backref("userbooks"))
     user = db.relationship("User", 
-            backref=db.backref("userbooks"))
+            backref = db.backref("userbooks"))
     recommendations = db.relationship("Recommendation", 
-            backref=db.backref("userbook"))
+            backref = db.backref("userbook"))
 
 
 
@@ -132,11 +132,11 @@ def init_app():
     print "Connected to DB."
 
 
-def connect_to_db(app):
+def connect_to_db(app, db_uri='postgres:///nextbook'):
     """Connect the database to our Flask app."""
 
     # Configure to use our PostgreSQL database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///nextbook'
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     # app.config['SQLALCHEMY_ECHO'] = True
     db.app = app
     db.init_app(app)
@@ -149,4 +149,53 @@ if __name__ == "__main__":
     # As a convenience, if we run this module interactively, it will leave
     # you in a state of being able to work with the database directly.
     init_app()
+
+
+
+##############################################################################
+# Example data creation
+
+
+def example_data():
+
+    Recommendation.query.delete()
+    UserBook.query.delete()
+    User.query.delete()
+    Book.query.delete()
+
+    new_user = User(user_id = 1, 
+                    f_name = "Test", 
+                    l_name = "User",
+                    email = "emmaonthursday@gmail.com",
+                    password = "Goodreads",
+                    goodreads_uid = 16767050,
+                    rec_frequency = 1,
+                    sign_up_date = "01-01-2016",
+                    paused = 0)
+    
+    new_book = Book(book_id = 1,
+                    isbn = "9780375760648",
+                    title = "War and Peace",
+                    author = "Leo Tolstoy",
+                    goodreads_bid = 18243)
+
+    new_userbook = UserBook(userbook_id = 1,
+                            book_id = 1,
+                            user_id = 1,
+                            status = "read",
+                            source = "nextbook",
+                            rating = "5")
+
+    new_recommendation = Recommendation(rec_id = 1,
+                        userbook_id = 1,
+                        date_created = "02-01-2016",
+                        date_provided = "02-29-2016",
+                        response = "read_now")
+
+    db.session.add_all([new_book, new_user, new_userbook, new_recommendation])
+
+    db.session.commit()
+
+
+
 

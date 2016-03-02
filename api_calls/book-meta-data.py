@@ -3,7 +3,6 @@ import requests
 import xmltodict
 import pdb
 from model import Book, User, Recommendation, UserBook, connect_to_db, db
-from server import app
 
 goodreads_key=os.environ['GOODREADS_KEY']
 # goodreads_secret=os.environ['GOODREADS_SECRET']
