@@ -10,11 +10,9 @@ from email.MIMEText import MIMEText
 
 def send_recommendation_email():
     """Send a recommendation email to each active user with today's book."""
-    # fromaddr = os.environ.get("NEXTBOOK_GMAIL")
-    fromaddr = "nextbookrecommends@gmail.com"
+    fromaddr = os.environ.get("NEXTBOOK_GMAIL")
     username = fromaddr
-    # password = os.environ.get("NEXTBOOK_GMAIL_PW")  
-    password = "Jolly4@ll2012"
+    password = os.environ.get("NEXTBOOK_GMAIL_PW")  
 
     
     active_users = User.query.filter(User.paused==0).all()
