@@ -1,5 +1,5 @@
 from server import app
-import smtplib
+# import smtplib
 import os
 import datetime as dt
 
@@ -10,9 +10,12 @@ from email.MIMEText import MIMEText
 
 def send_recommendation_email():
     """Send a recommendation email to each active user with today's book."""
-    fromaddr = os.environ.get("NEXTBOOK_GMAIL")
+    # fromaddr = os.environ.get("NEXTBOOK_GMAIL")
+    fromaddr = "nextbookrecommends@gmail.com"
     username = fromaddr
-    password = os.environ.get("NEXTBOOK_GMAIL_PW")  
+    # password = os.environ.get("NEXTBOOK_GMAIL_PW")  
+    password = "Jolly4@ll2012"
+
     
     active_users = User.query.filter(User.paused==0).all()
     if active_users:
@@ -36,9 +39,10 @@ def send_recommendation_email():
             text = msg.as_string()
             server.sendmail(fromaddr, msg['To'], text)
             server.quit()
+    return "sent email"
 
 
 ##### FUNCTION CALLS #####
-connect_to_db(app)
+# connect_to_db(app)
 
-send_recommendation_email()
+# send_recommendation_email()

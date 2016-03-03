@@ -48,4 +48,4 @@ scheduler.add_job(generate_recommendation_delivery_dates, trigger='cron', hour='
 
 ###### FUNCTION CALLS ###### 
 connect_to_db(app)
-# generate_recommendation_delivery_dates()
+generate_recommendation_delivery_dates()
