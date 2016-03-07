@@ -5,20 +5,19 @@
 
 
 {% block content %}
-<div class="container-fluid">
-    <div class="container" id="title-page">
-            <h1 class="site-header">Welcome to NextBook!</h1>
-            <br>
-            <br>
+<div class="container" id="title-page">
+    <div class="row">
+        <div class="col-xs-12 col-md-10 col-md-offset-1 col-lg-10 col-lg-offset-1" id="header-box">
+            <h1 id="site-header">Welcome to NextBook!</h1>
             <h2>One book per day.</h2>
+            <br>
             <br>
             <a href="/sign-up">Sign up with your Goodreads account today!</a>
             <br>
             <br>
             Already a member? <a href="/login">Log in here.</a>
-
+        </div>
     </div>
-
 </div>
 
 {% endblock %}

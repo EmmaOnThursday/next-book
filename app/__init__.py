@@ -128,19 +128,7 @@ def get_new_user_job_results():
             else:
                 recs_to_show = recs_to_date
                 today_rec = False
-        return recs_to_show, today_rec
-
-    # respond to ajax call asking for recommendation list
-    # move @rec python code up here to query db
-    # ajax will ask this route if job is done yet
-
-
-
-@app.route("/loading")
-def loading():
-    """For new users only: waiting for recommendations to generate."""
-    
-    return render_template("loading.html")
+        return jsonify(today_rec)
 
 
 

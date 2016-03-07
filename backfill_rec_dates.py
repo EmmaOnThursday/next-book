@@ -1,8 +1,8 @@
 
 import random
 import datetime as dt
-from server import app
-from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
+from app import app
+from app.model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 
 
 
@@ -24,5 +24,5 @@ def generate_recommendation_delivery_dates(i):
 ###### FUNCTION CALLS ###### 
 connect_to_db(app)
 
-for i in range(1,2):
+for i in range(1,10):
     generate_recommendation_delivery_dates(i)
