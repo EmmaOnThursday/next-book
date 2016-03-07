@@ -100,15 +100,6 @@ def sign_up():
 
 
 
-# @app.route("/test")
-# def test_redis():
-#     q = Queue(connection=Redis())
-    
-#     result = q.enqueue(test_function)
-#     return "this is a test"
-
-
-
 @app.route("/get_signup_status")
 def get_new_user_job_results():
     """Returns status of redis job to see if recommendations are available."""
