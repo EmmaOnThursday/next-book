@@ -1,0 +1,54 @@
+body {
+    font-family: sans-serif;
+    background: url("/static/img/background-gradient.jpg") no-repeat center center fixed;
+    -webkit-background-size: cover; 
+    -moz-background-size: cover; 
+    -o-background-size: cover; 
+    background-size: cover; 
+}
+
+h2 {
+    font-family: sans-serif;
+}
+
+.navbar {
+    background-color: #476b6b;
+    border-color: #E7E7E7;
+}
+
+#site-header {
+    font-family: sans-serif;
+    color: white;
+}
+
+#title-page {
+    text-align: center;
+    padding: 10px;
+    vertical-align: middle;
+    }
+
+#today_rec {
+    padding: 10px;
+    height: 250px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.title{
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#shield {
+    height: 50px;
+    width: 50px;
+    text-align: inline;
+}
+
+.existing-feedback {
+    background-color: red;
+    font-weight: bolder;
+    border: 
+}
+

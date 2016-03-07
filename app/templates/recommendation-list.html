@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<div id="today_rec">
+
+    {% if today_rec %}
+        <h3>Today's Recommendation</h3>
+        <p class='title'><a href="/recommendations/{{today_rec.rec_id}}">{{today_rec.userbook.book.title}}</a></p>
+        {{today_rec.userbook.book.author}} <br><br>
+        <button class="btn btn-feedback read-now {{'existing-feedback' if today_rec.response =='read-now' else ''}}" data="{{today_rec.rec_id}}">I'll read this now!</button> 
+        <button class="btn btn-feedback read-later {{'existing-feedback' if today_rec.response =='read-later' else ''}}" data="{{today_rec.rec_id}}">I'll read this later</button> 
+        <button class="btn btn-feedback reject {{'existing-feedback' if today_rec.response =='reject' else ''}}" data="{{today_rec.rec_id}}">I won't read this.</button> 
+        <br> 
+        Already read this one? 
+        <button href='{{today_rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{today_rec.rec_id}}">Rate this book on Goodreads!</button>
+
+    {% elif recs_to_date %}
+
+        <h3> Your account is currently paused. <br> 
+        To unpause recommendations,  please visit your <a href='/account'>account page</a>.</h3>
+    
+    {% else %}
+
+        <h3> Looks like we don't have any recommendations for you yet! Check back tomorrow.</h3>
+
+    {% endif %}
+
+</div>
+
+
+{% if recs_to_date %}
+<h3>Previous Recommendations</h3>
+    {% for rec in recs_to_date %}
+        <div class="each-rec">
+            <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
+            by {{rec.userbook.book.author}} 
+            <br>
+            Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
+            <br>
+                <button class="btn btn-feedback read-now {{'existing-feedback' if rec.response =='read-now' else ''}}" data="{{rec.rec_id}}">I'll read this now!</button> 
+                <button class="btn btn-feedback read-later {{'existing-feedback' if rec.response =='read-later' else ''}}" data="{{rec.rec_id}}">I'll read this later</button> 
+                <button class="btn btn-feedback reject {{'existing-feedback' if rec.response =='reject' else ''}}" data="{{rec.rec_id}}">I won't read this.</button> 
+                <br>
+            Already read this one? <button href='{{rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{rec.rec_id}}">Rate this book on Goodreads!</button>
+        </div>
+        <br>
+    {% endfor %}
+{% endif %}
+
+
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<script>
+
+
+function colorizeButtons(results) {
+
+    var buttonType = results['button'] ;
+    var recID = results['rec_id'] ;
+
+    $("."+buttonType+'[data='+recID+']').addClass('existing-feedback');
+
+    $("."+buttonType+'[data='+recID+']').siblings().removeClass('existing-feedback') ;
+}
+
+function serverRelay(event) {
+    
+    var rec_id_js = $(this).attr('data'); 
+
+    if ($(this).hasClass('read-now')) {
+        var responseData = {'response':'read-now', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('read-later')) {
+        var responseData = {'response':'read-later', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('reject')) {
+        var responseData = {'response':'reject', 'rec_id':rec_id_js} ; 
+    } else if ($(this).hasClass('already-read')) {
+        var responseData = {'response':'already-read', 'rec_id':rec_id_js} ; 
+    }  
+    $.post("/recommendations/"+rec_id_js+"/user-feedback", responseData, colorizeButtons);
+    
+}
+
+
+$(".btn-feedback").click(serverRelay);
+
+
+</script>
+
+
+{% endblock %}

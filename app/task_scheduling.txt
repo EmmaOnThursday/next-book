@@ -1,0 +1,45 @@
+PROCESS FOR RUNNING TIMED REDIS JOBS
+
+Start running redis:
+$ redis-server
+# to run in background:
+$ redis-server &
+
+
+
+Start running RQ worker:
+$ rq worker
+# to run in background:
+$ rq worker &
+
+
+
+Start running RQ scheduler:
+$ rqscheduler
+# to run in background:
+$ rqscheduler &
+
+
+
+NOW YOU CAN SCHEDULE JOBS.
+
+In a Python file:
+
+from redis import Redis
+from rq_scheduler import Scheduler
+
+# Create a scheduler object with your Redis server.
+scheduler = Scheduler(connection=redis_server)
+
+## in app: be sure to clear scheduled jobs before adding new ones! Otherwise there will be duplicates created when you start your app
+
+# decide when to start job
+time = datetime(2016, 3, 3, 2, 10)
+
+scheduler.schedule(
+    scheduled_time=time, # Time for first execution, in UTC timezone
+    func=print_greeting,        # Function to be queued
+    args = ["Emma"],            # any function arguments
+    interval=120,                   # Time before the function is called again, in seconds
+    repeat=5                      # Repeat this number of times (None means repeat forever)
+)
