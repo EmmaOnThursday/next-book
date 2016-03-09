@@ -5,15 +5,51 @@
 
 
 {% block content %}
+<div class="container">
+    <div class="row" >
+        <div class="each-rec col-xs-12 col-md-10 col-md-offset-1 col-lg-10 col-lg-offset-1">
+        <h3>Welcome, {{User.f_name}}!</h3>
+        <br>
+        Email: {{User.email}} <br>
+        Member Since: {{User.sign_up_date.strftime("%B %d, %Y")}}
+        <br>
+        <br>
+        {% if User.paused==1 %}
+            <p>Your account is currently paused.   <button class="btn btn-activate" data="0">Resume my recommendations!</button></p>
+        {% elif User.paused == 0 %}
+            <p>  Already found a great book?</p>
+            <p><button class="btn btn-pause" data="1">Pause my recommendations</button></p>
+        {% endif %}
+        </div>
+    </div>
+</div>
 
-<h3>Welcome, Emma!</h3>
-<br>
-Email: {{User.email}}
-<br>
-You're set up to receive recommendations every {{User.rec_frequency}} day(s).
-<br>
-{% if User.paused==1 %}
-    <p>Your account is currently paused. Click here to resume recommendations!</p>
-{% endif %}
+
+<script src="https://code.jquery.com/jquery.js"></script>
+<!-- <script src="/static/jquery-2.2.1.min.js"></script> -->
+
+
+<script>
+
+
+function serverRelay(event) {
+    
+    if ($(this).hasClass('btn-activate')) {
+        var accountStatus = {'paused': 0, 'user_id':{{User.user_id}}} ; 
+    } else if ($(this).hasClass('btn-pause')) {
+        var accountStatus = {'paused': 1, 'user_id':{{User.user_id}}}  ; 
+    } 
+
+    $.post("/change-account-status", accountStatus, function() { location.reload (); })    ;}
+
+
+$(".btn-activate").click(serverRelay);
+
+$(".btn-pause").click(serverRelay);
+
+</script>
+
 
 {% endblock %}
+
+

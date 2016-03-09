@@ -1,20 +1,32 @@
-/*global*/
+/* GLOBAL */
 
 body {
-    font-family: 'Alice', serif;
-    background: url("/static/img/book_stack_warm_crop.jpg") no-repeat center center fixed;
+    background: url("/static/img/open_book_crop.jpg") no-repeat center center fixed;
     -webkit-background-size: cover; 
     -moz-background-size: cover; 
     -o-background-size: cover; 
     background-size: cover; 
+    padding-top: 70px;
 }
 
-html * {
+html * 
     font-family: 'Raleway', serif;
 }
 
 a {
-    color:  #002966;
+    color: #004080;
+}
+
+h1 {
+    font-weight: 800;
+}
+
+h2 {
+    font-weight: 800;
+}
+
+h3 {
+    font-weight: 800;
 }
 
 .navbar-inverse {
@@ -28,9 +40,10 @@ a {
 }
 
 #shield {
-    height: 50px;
-    width: 50px;
+    height: 48px;
+    width: 48px;
     text-align: inline;
+    margin-bottom: 4px;
 }
 
 /*title page*/
@@ -51,26 +64,44 @@ a {
 
 }
 
-/*recommendation detail & list*/
+/* RECOMMENDATION PAGES */
 
-#today_rec {
-    padding: 10px;
-    height: 250px;
+#today-rec {
     text-align: center;
     vertical-align: middle;
     background-color: rgba(255,255,255,0.5);
     font-size: 18px;
+    padding-right: 15px;
+    padding-right: 15px;
 }
-
 
 .row > h3 {
     text-align: center;
+}
+
+.vertical-center-row {
+    margin: auto;
+    vertical-align: middle;
 }
 
 .each-rec {
     background-color: rgba(255,255,255,0.5);    
     margin: 10px;
     position: 10px;
+    vertical-align: middle;
+    float:none;
+    display: block;
+}
+
+.section-header {
+    background-color: rgba(255,255,255,0.5);    
+    margin: 30px 0px 10px 0px;
+    font-weight: 800;
+    text-align: center;
+    vertical-align: middle;
+    padding-right: 15px;
+    padding-right: 15px;
+    width:800px;
 }
 
 .each-rec-text{
@@ -78,20 +109,54 @@ a {
 }
 
 .cover-image {
-    display:inline-block;
-    padding:10px 0px 10px 0px;
+    display: block;
+    padding:5px 0px 5px 0px;
     vertical-align: middle;
     margin: auto;
 }
 
-.title{
-    color: black;
-    font-size: 16px;
-    font-weight: bold;
+.cover-image:hover {
+    opacity: .6;
+    filter:alpha(opacity=10);
 }
 
-.existing-feedback {
-    background-color: red;
-    font-weight: bolder;
+.title{
+    color: black;
+    font-size: 18px;
+    font-weight: 500;
+    text-decoration: underline; 
 }
+
+.title:hover {
+    color: #0066cc;
+  
+}
+
+.btn-feedback:hover {
+    background-color: #999999;
+}
+
+.btn-feedback.already-read {
+    color: #333;
+    margin-top: 2px;
+}
+
+.btn-feedback.already-read:hover {
+    background-color: rgba(255,255,255, 0);
+    border-color: #0066cc;
+    color: #0066cc;
+}
+
+/* REC DETAIL PAGE */
+
+.detail-cover-image {
+    display: block;
+    padding:5px 0px 5px 0px;
+    vertical-align: middle;
+    margin-top: 20px; 
+    margin-left:10px;
+    margin-right: 10px;
+}
+
+
 

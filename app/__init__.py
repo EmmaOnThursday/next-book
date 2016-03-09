@@ -37,9 +37,9 @@ gr_user_id = "16767050"
 
 current_user_id = 1
 
-print goodreads_key
-print gr_user_id
-print current_user_id
+# print goodreads_key
+# print gr_user_id
+# print current_user_id
 
 ######### ROUTES ######### 
 
@@ -193,7 +193,6 @@ def record_user_feedback(rec_id):
 
 
 
-
 @app.route("/account")
 def account_page():
     """Account preferences page."""
@@ -206,25 +205,32 @@ def account_page():
     return render_template("account.html", User=current_user, status=status)
 
 
+@app.route("/change-account-status", methods=['POST'])
+def change_account_status():
+    # change account status
+    current_user = User.query.get(current_user_id)
+    status = request.form.get('paused')
+
+    current_user.paused = status
+    db.session.add(current_user)
+    db.session.commit()
+
+    return jsonify({"status": status})
 
 
-#### APP MAINTENANCE ROUTES ####
+
+#### APP SETUP & MAINTENANCE ####
+
 # need to send emails to all users at noon
 # need to update database daily at midnight
 # scheduler.start()
 
 
 
-#### FUNCTION CALLS ####
-# if __name__ == "__main__":
-    # We have to set debug=True here, since it has to be True at the point
-    # that we invoke the DebugToolbarExtension
-    # app.debug = True
 
 connect_to_db(app)
 
 # Use the DebugToolbar
 DebugToolbarExtension(app)
 
-# app.run()
 

@@ -4,17 +4,16 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-xs-12 col-md-8 col-md-offset-2 col-lg-8 col-lg-offset-2" id="today_rec">
-
+        <div class="vertical-center-row col-xs-12 col-md-8 col-md-offset-2" id="today-rec">
             {% if today_rec %}
                 <h3>Today's Recommendation</h3>
-                <p class='title'><a href="/recommendations/{{today_rec.rec_id}}">{{today_rec.userbook.book.title}}</a></p>
+                <a href="/recommendations/{{today_rec.rec_id}}"><p class='title'>{{today_rec.userbook.book.title}}</p></a>
                 {{today_rec.userbook.book.author}} <br><br>
-                <button class="btn btn-feedback read-now {{'existing-feedback' if today_rec.response =='read-now' else ''}}" data="{{today_rec.rec_id}}">I'll read this now!</button> 
-                <button class="btn btn-feedback read-later {{'existing-feedback' if today_rec.response =='read-later' else ''}}" data="{{today_rec.rec_id}}">I'll read this later</button> 
-                <button class="btn btn-feedback reject {{'existing-feedback' if today_rec.response =='reject' else ''}}" data="{{today_rec.rec_id}}">I won't read this.</button> 
+                <button class="btn btn-feedback read-now {{'btn-danger' if today_rec.response =='read-now' else ''}}" data="{{today_rec.rec_id}}">I'll read this now!</button> 
+                <button class="btn btn-feedback read-later {{'btn-danger' if today_rec.response =='read-later' else ''}}" data="{{today_rec.rec_id}}">I'll read this later</button> 
+                <button class="btn btn-feedback reject {{'btn-danger' if today_rec.response =='reject' else ''}}" data="{{today_rec.rec_id}}">I won't read this.</button> 
                 <br> 
-                Already read this one? <a href='{{today_rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{today_rec.rec_id}}">Rate this book on Goodreads!</a>
+                <p><a href='{{today_rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{today_rec.rec_id}}">Already read this one? Rate this book on Goodreads!</a></p>
 
 
             {% elif recs_to_date %}
@@ -32,36 +31,40 @@
     </div>
     {% if recs_to_date %}
         <div class="row">
-        <h3 id="prev-rec-section-header">Previous Recommendations</h3>
-            {% for rec in recs_to_date %}
-                <div class="each-rec col-xs-12 col-md-8 col-md-offset-2">
-                    <div class="row">
-                        <div class="cover-image hidden-xs col-sm-2 col-md-2 col-lg-2" >
-                            <img class="img-responsive cover-image" src="{{rec.userbook.book.img_url if rec.userbook.book.img_url != 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png' else 'static/img/shield.png'}}"/>
-                        </div>
-                        <div class="each-rec-text col-xs-12 col-sm-9 col-md-9 col-lg-8 col-lg-offset-1">
-                            <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
-                            by {{rec.userbook.book.author}} 
+        <div class="section-header col-xs-12 col-md-8 col-md-offset-2">
+        <h3>Previous Recommendations</h3>
+        </div>
+
+        {% for rec in recs_to_date %}
+            <div class="each-rec col-xs-12 col-md-8 col-md-offset-2">
+                <div class="row">
+                    <div class="cover-image hidden-xs col-sm-2 col-md-2 col-lg-2" >
+                        <a href="/recommendations/{{rec.rec_id}}"><img class="img-responsive cover-image" src="{{rec.userbook.book.img_url if rec.userbook.book.img_url != 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png' else 'static/img/shield-recs-lg.png'}}"/></a>
+                    </div>
+                    <div class="each-rec-text col-xs-12 col-sm-9 col-md-9 col-lg-8 col-lg-offset-1">
+                        <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
+                        by {{rec.userbook.book.author}} 
+                        <br>
+                        Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
+                        <br>
+                            <button class="btn btn-feedback read-now {{'btn-danger' if rec.response =='read-now' else ''}}" data="{{rec.rec_id}}">I'll read this now!</button> 
+                            <button class="btn btn-feedback read-later {{'btn-danger' if rec.response =='read-later' else ''}}" data="{{rec.rec_id}}">I'll read this later</button> 
+                            <button class="btn btn-feedback reject {{'btn-danger' if rec.response =='reject' else ''}}" data="{{rec.rec_id}}">I won't read this.</button> 
                             <br>
-                            Recommended on {{rec.date_provided.strftime("%B %d, %Y")}}
-                            <br>
-                                <button class="btn btn-feedback read-now {{'existing-feedback' if rec.response =='read-now' else ''}}" data="{{rec.rec_id}}">I'll read this now!</button> 
-                                <button class="btn btn-feedback read-later {{'existing-feedback' if rec.response =='read-later' else ''}}" data="{{rec.rec_id}}">I'll read this later</button> 
-                                <button class="btn btn-feedback reject {{'existing-feedback' if rec.response =='reject' else ''}}" data="{{rec.rec_id}}">I won't read this.</button> 
-                                <br>
-                            Already read this one? <a href='{{rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{rec.rec_id}}">Rate this book on Goodreads!</a>
-                        </div>
+                        <a href='{{rec.userbook.book.goodreads_url}}' class="btn btn-feedback already-read" data-rec="{{rec.rec_id}}">Already read this one? Rate this book on Goodreads!</a>
                     </div>
                 </div>
-                <br>
-            {% endfor %}
+            </div>
+            <br>
+        {% endfor %}
         </div>
         <br>
     {% endif %}
 
 </div>
 <script src="https://code.jquery.com/jquery.js"></script>
-
+<!-- <script src="/static/jquery-2.2.1.min.js"></script>
+ -->
 <script>
 
 
@@ -70,9 +73,9 @@ function colorizeButtons(results) {
     var buttonType = results['button'] ;
     var recID = results['rec_id'] ;
 
-    $("."+buttonType+'[data='+recID+']').addClass('existing-feedback');
+    $("."+buttonType+'[data='+recID+']').addClass('btn-danger');
 
-    $("."+buttonType+'[data='+recID+']').siblings().removeClass('existing-feedback') ;
+    $("."+buttonType+'[data='+recID+']').siblings().removeClass('btn-danger') ;
 }
 
 function serverRelay(event) {
