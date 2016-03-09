@@ -17,11 +17,3 @@ Use of NextBook requires a Goodreads Account.
 ## Support
 
 Please [open an issue](https://github.com/EmmaOnThursday/next-book/issues/new) for support.
-
-## Contributing
-
-```sh
-curl -LO http://git.io/Xy0Chg
-git add README.md
-git commit -m "Use README Boilerplate"
-```
