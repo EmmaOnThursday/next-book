@@ -9,8 +9,8 @@ body {
     padding-top: 70px;
 }
 
-html * 
-    font-family: 'Raleway', serif;
+html * {
+    font-family: 'Raleway', sans-serif;
 }
 
 a {

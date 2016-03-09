@@ -38,10 +38,10 @@
         {% for rec in recs_to_date %}
             <div class="each-rec col-xs-12 col-md-8 col-md-offset-2">
                 <div class="row">
-                    <div class="cover-image hidden-xs col-sm-2 col-md-2 col-lg-2" >
-                        <a href="/recommendations/{{rec.rec_id}}"><img class="img-responsive cover-image" src="{{rec.userbook.book.img_url if rec.userbook.book.img_url != 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png' else 'static/img/shield-recs-lg.png'}}"/></a>
+                    <div class="cover-image hidden-xs col-sm-2 col-md-2 col-md-offset-1" >
+                        <a href="/recommendations/{{rec.rec_id}}"><img class="img-responsive cover-image" src="{{rec.userbook.book.img_url if rec.userbook.book.img_url != 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png' else 'static/img/shield-rec-detail.png'}}"/></a>
                     </div>
-                    <div class="each-rec-text col-xs-12 col-sm-9 col-md-9 col-lg-8 col-lg-offset-1">
+                    <div class="each-rec-text col-xs-12 col-sm-9 col-md-8">
                         <a href="/recommendations/{{rec.rec_id}}"><p class='title'>{{rec.userbook.book.title}}</p></a>
                         by {{rec.userbook.book.author}} 
                         <br>
