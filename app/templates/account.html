@@ -15,7 +15,8 @@
         <br>
         <br>
         {% if User.paused==1 %}
-            <p>Your account is currently paused.   <button class="btn btn-activate" data="0">Resume my recommendations!</button></p>
+            <p>Your account is currently paused.</p>   
+            <p><button class="btn btn-activate" data="0">Resume my recommendations!</button></p>
         {% elif User.paused == 0 %}
             <p>  Already found a great book?</p>
             <p><button class="btn btn-pause" data="1">Pause my recommendations</button></p>

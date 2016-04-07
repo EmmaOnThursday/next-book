@@ -14,6 +14,7 @@ current_user_id = 1
 
 def get_shelves(gr_user_id, goodreads_key):
     """Pulls user's shelves out of their user info."""
+    
     user = requests.get('https://www.goodreads.com/user/show.xml?key=$%s&v=2&id=%s' % (goodreads_key, gr_user_id))
     user_info = xmltodict.parse(user.content)
     # initialize user shelf dictionary

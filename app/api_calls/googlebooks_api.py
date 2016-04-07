@@ -10,6 +10,7 @@ def fetch_google_books_categories():
     """Retrieves Google Books categories for any new library books."""
 
     # get list of ISBNs for books that need subjects
+    # how do I make sure this is retrieving all data now, instead of being lazy about it?
     need_subjects = Book.query.filter(Book.get_subjects==1, Book.isbn!='0').all()
     print "Need subjects for x books:", len(need_subjects)
     subject_dict = {}

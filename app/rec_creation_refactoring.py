@@ -68,6 +68,8 @@ def add_book_subjects_to_library(book_subjects, library):
 def get_common_subjects(book_subjects):
     """Get list of all subjects associated with 15+ books."""
 
+    #NOTES FOR REFACTORING:
+        # using count makes for long runtime; maybe build a dictionary instead?
     common_subjects = []
     all_subj = list(book_subjects['subject'])
     for subject in book_subjects['subject']:
@@ -75,6 +77,7 @@ def get_common_subjects(book_subjects):
             common_subjects.append(subject)
 
     return common_subjects #list of common subject names
+
 
 def create_subject_columns(common_subjects, book_attributes):
     """For each subject in common_subjects, create a binary column in book_attributes."""
@@ -92,6 +95,8 @@ def create_subject_columns(common_subjects, book_attributes):
 
 def transform_pub_dates(column):
     """Transform column of raw dates to column of bucketed date categories."""
+
+    # look into rebinning these by population sizes?
 
     date_categories = []
     for item in column:
