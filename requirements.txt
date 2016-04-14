@@ -4,8 +4,6 @@ APScheduler==3.0.5
 billiard==3.3.0.22
 blessings==1.6
 blinker==1.4
-bpython==0.15
-celery==3.1.20
 click==6.3
 curtsies==0.2.6
 DateTime==4.0.1
@@ -16,7 +14,6 @@ Flask-Mail==0.9.1
 Flask-Rauth==0.3.2
 Flask-SQLAlchemy==2.1
 futures==3.0.5
-goodreads==0.2.4
 greenlet==0.4.9
 itsdangerous==0.24
 Jinja2==2.8
