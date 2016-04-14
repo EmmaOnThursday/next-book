@@ -41,18 +41,42 @@ current_user_id = 1
 # print gr_user_id
 # print current_user_id
 
-######### ROUTES ######### 
+######### ROUTES #########
 
 @app.route("/")
 def index():
-    """Landing page; includes login.""" 
+    """Landing page; includes login."""
 
     return render_template("home.html")
+
+@app.route("/login", methods = ['GET', 'POST'])
+def login():
+    """Login page."""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter(User.email == email, User.password == password).first()
+        if user is not None:
+            session['user_id'] =  user.user_id
+            return redirect(url_for('recommendations'))
+        else:
+            # logic: counts login attempts; maybe first show try to log in again; later, recommend creating an account
+            flash("Wrong username or password! Please try again, or go to sign up page to create new account.")
+
+    return render_template('login.html')
+
+
+@app.route("/logout", methods = ['GET'])
+def logout():
+    session["user_id"] = None
+    return render_template('logout.html')
+
+
 
 
 @app.route("/sign-up", methods=['GET', 'POST'])
 def sign_up():
-    """For new users only: sign-up page."""  
+    """For new users only: sign-up page."""
 
     # if form has been submitted...
     if request.method == 'POST':
@@ -72,10 +96,10 @@ def sign_up():
         if user != []:
             flash("Looks like you've already signed up! Please log in.")
             return redirect(url_for('index'))
-        
+
         # if user does not exist, create & commit to DB
         else:
-            new_user = User(email=email, password=password, 
+            new_user = User(email=email, password=password,
                 f_name=f_name, l_name=l_name,
                 goodreads_uid=goodreads_uid, rec_frequency=rec_frequency,
                 sign_up_date=dt.datetime.now(), paused=0, user_id=user_id)
@@ -84,17 +108,17 @@ def sign_up():
             db.session.commit()
             flash("Welcome to NextBook!")
             session['current_user_id'] = new_user.user_id
-            
+
             ## new user setup ###
             q = Queue(connection=Redis())
 
-            results = q.enqueue_call(new_user_full_setup, 
+            results = q.enqueue_call(new_user_full_setup,
                 args = [gr_user_id, new_user.user_id, goodreads_key],
                 ttl=86400)
 
             session['new_user_job_id'] = results.get_id()
-            
-            return redirect(url_for('recommendations'))    
+
+            return redirect(url_for('recommendations'))
 
     return render_template('sign-up.html')
 
@@ -113,7 +137,7 @@ def get_new_user_job_results():
         # return recs
         current_user = User.query.get(session['current_user_id'])
 
-        query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(), 
+        query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(),
             Recommendation.userbook.has(user_id=current_user_id))
 
         recs_to_date=query.order_by(desc(Recommendation.date_provided)).all()
@@ -135,10 +159,11 @@ def get_new_user_job_results():
 @app.route("/recommendations")
 def recommendations():
     """List of all recommendations; allows users to leave feedback on recommendations."""
+    # check for logged in user
 
     current_user = User.query.get(1)
 
-    query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(), 
+    query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(),
         Recommendation.userbook.has(user_id=current_user_id))
 
     recs_to_date=query.order_by(desc(Recommendation.date_provided)).all()
@@ -161,7 +186,7 @@ def recommendations():
 @app.route("/recommendations/<int:rec_id>")
 def rec_details(rec_id):
     """Provides details on each specific recommendation."""
-    
+    # checked for logged in user
     current_rec = Recommendation.query.get(rec_id)
     print current_rec.response
 
@@ -179,7 +204,7 @@ def record_user_feedback(rec_id):
         current_user.paused = 1
         current_user.paused_date = dt.datetime.today()
         db.session.add(current_user)
-        
+
     rec_id = request.form.get('rec_id')
     current_rec = Recommendation.query.get(rec_id)
     current_rec.response = response # get response from user input
@@ -196,6 +221,7 @@ def record_user_feedback(rec_id):
 @app.route("/account")
 def account_page():
     """Account preferences page."""
+    # check for logged-in user
     # pause account, change rec frequency, change email, pw, etc
     current_user = User.query.get(current_user_id)
     status = 0
@@ -232,5 +258,3 @@ connect_to_db(app)
 
 # Use the DebugToolbar
 DebugToolbarExtension(app)
-
-
