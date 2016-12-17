@@ -15,7 +15,6 @@ from email.MIMEText import MIMEText
 
 from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 
-
 # set up scheduler
 def make_scheduler():
     """Create scheduler object & add functions to it."""
@@ -33,9 +32,17 @@ def make_scheduler():
         'max_instances': 3
     }
 
-    scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
-
-    scheduler.add_job(generate_recommendation_delivery_dates, trigger='cron', hour='8', minute='1')
+    scheduler = BackgroundScheduler(
+                        jobstores=jobstores,
+                        executors=executors,
+                        job_defaults=job_defaults,
+                        timezone=utc
+                        )
+    scheduler.add_job(
+                        generate_recommendation_delivery_dates,
+                        trigger='cron',
+                        hour='8',
+                        minute='1')
     scheduler.add_job(send_recommendation_email, trigger='cron', hour='20')
 
     return scheduler
@@ -46,7 +53,8 @@ def generate_recommendation_delivery_dates():
     active_users = User.query.filter(User.paused==0).all()
 
     for user in active_users:
-        undelivered_recs = Recommendation.query.filter(Recommendation.userbook.has(UserBook.user_id==user.user_id),
+        undelivered_recs = Recommendation.query.filter(
+            Recommendation.userbook.has(UserBook.user_id==user.user_id),
             Recommendation.date_provided == None).all()
         today = random.choice(undelivered_recs)
         today.date_provided = dt.date.today()
@@ -54,7 +62,7 @@ def generate_recommendation_delivery_dates():
 
     db.session.commit()
 
-
+#TODO: batch send emails; this is looping & sending one at a time
 def send_recommendation_email():
     """Send a recommendation email to each active user with today's book."""
     fromaddr = os.environ.get("NEXTBOOK_GMAIL")
@@ -85,10 +93,3 @@ def send_recommendation_email():
             text = msg.as_string()
             server.sendmail(fromaddr, msg['To'], text)
         server.quit()
-
-###### FUNCTION CALLS ######
-connect_to_db(app)
-scheduler = make_scheduler(functions_to_add)
-scheduler.start()
-# generate_recommendation_delivery_dates()
-# send_recommendation_email()
