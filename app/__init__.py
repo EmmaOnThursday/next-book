@@ -9,7 +9,6 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import desc
 from jinja2 import StrictUndefined
 from redis import Redis
-from datetime import datetime
 from rq import Queue
 from rq.job import Job
 
