@@ -1,23 +1,19 @@
 """Every day, update the database at 12am to add a delivery date to one rec for each user."""
 
+import os
 import random
 import datetime as dt
-import os
 
-# app imports
-from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
-
-# scheduler imports
 from pytz import utc
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 
-# email imports
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
+from model import connect_to_db, db, Book, User, Recommendation, Subject, UserBook, BookSubject
 
 
 # set up scheduler
@@ -38,22 +34,19 @@ def make_scheduler():
     }
 
     scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
-    
+
     scheduler.add_job(generate_recommendation_delivery_dates, trigger='cron', hour='8', minute='1')
     scheduler.add_job(send_recommendation_email, trigger='cron', hour='20')
 
     return scheduler
 
-# define functions to schedule
-
 
 def generate_recommendation_delivery_dates():
     """For each user, 'deliver' one recommendation per day."""
     active_users = User.query.filter(User.paused==0).all()
-    # print len(active_users)
 
     for user in active_users:
-        undelivered_recs = Recommendation.query.filter(Recommendation.userbook.has(UserBook.user_id==user.user_id), 
+        undelivered_recs = Recommendation.query.filter(Recommendation.userbook.has(UserBook.user_id==user.user_id),
             Recommendation.date_provided == None).all()
         today = random.choice(undelivered_recs)
         today.date_provided = dt.date.today()
@@ -62,13 +55,12 @@ def generate_recommendation_delivery_dates():
     db.session.commit()
 
 
-
 def send_recommendation_email():
     """Send a recommendation email to each active user with today's book."""
     fromaddr = os.environ.get("NEXTBOOK_GMAIL")
     username = fromaddr
-    password = os.environ.get("NEXTBOOK_GMAIL_PW")  
-    
+    password = os.environ.get("NEXTBOOK_GMAIL_PW")
+
     active_users = User.query.filter(User.paused==0).all()
     if active_users:
         for user in active_users:
@@ -81,22 +73,20 @@ def send_recommendation_email():
             msg['From'] = fromaddr
             msg['To'] = user.email
             msg['Subject'] = "Today\'s Recommendation!"
-            body = "Here's today's recommendation!\n"+rec_title+": "+rec_link+"\nWith love from NextBook"
+            body = "Here's today's recommendation!\n{title}:{link}\nWith love from NextBook".format(
+                    title=rec_title,
+                    link=rec_link)
             msg.attach(MIMEText(body, 'plain'))
 
-            # The actual mail send
+            # Send email
             server = smtplib.SMTP('smtp.gmail.com:587')
             server.starttls()
             server.login(username,password)
             text = msg.as_string()
             server.sendmail(fromaddr, msg['To'], text)
-            server.quit()
+        server.quit()
 
-
-#time is in UTC
-
-
-###### FUNCTION CALLS ###### 
+###### FUNCTION CALLS ######
 connect_to_db(app)
 scheduler = make_scheduler(functions_to_add)
 scheduler.start()
