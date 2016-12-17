@@ -7,13 +7,12 @@ import requests
 import xmltodict
 from flask import Flask
 
-from server import app
 import server
+from server import app
 from model import connect_to_db, db, example_data, User, UserBook, Recommendation, Book, Subject, BookSubject
 from api_calls.googlebooks_api import fetch_google_books_categories, create_book_subjects
 from api_calls.openlib_api import fetch_openlib_subject_info
 from api_calls.new_user_api_calls import get_shelves, get_books_from_shelves, add_book_to_library, add_userbook_to_userbooks
-
 
 
 goodreads_key=os.environ['GOODREADS_KEY']
@@ -53,7 +52,6 @@ class NextBookTests(unittest.TestCase):
         shelves = get_shelves(gr_uid)
         self.assertEqual(len(shelves), 3)
 
-
     def test_googlebooks(self):
         """Test outputs of googlebooks API.
         Example book is War & Peace."""
@@ -65,26 +63,21 @@ class NextBookTests(unittest.TestCase):
         """Test outputs of openlibrary API."""
         pass
 
-
-
     def test_create_recommendations(self):
         """Are recommendations created for a new user?"""
         pass
 
-
     def test_homepage(self):
         """Text NextBook homepage."""
-        
+
         result = self.client.get('/')
         self.assertEqual(result.status_code, 200)
-
 
     def test_rec_list_page(self):
         """Text NextBook recommendations list page."""
 
         result = self.client.get('/recommendations')
         self.assertEqual(result.status_code, 200)
-
 
     def test_rec_detail_page(self):
         """Text NextBook recommendation detail page."""
@@ -99,20 +92,6 @@ class NextBookTests(unittest.TestCase):
         db.drop_all()
 
 
-
-
 if __name__ == "__main__":
     import unittest
-
     unittest.main()
-
-
-
-
-
-
-
-
-
-
-
