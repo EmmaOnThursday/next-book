@@ -8,7 +8,6 @@ from flask import Flask, render_template, redirect, request, flash, session, url
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import desc
 from jinja2 import StrictUndefined
-
 from redis import Redis
 from datetime import datetime
 from rq import Queue
@@ -26,27 +25,19 @@ q = Queue(connection=Redis(), default_timeout=600)
 # Prevents undefined variables in Jinja from failing silently.
 app.jinja_env.undefined = StrictUndefined
 
-# keys & secrets
 goodreads_key=os.environ['GOODREADS_KEY']
 # goodreads_secret=os.environ['GOODREADS_SECRET']
 
 # Required to use Flask sessions and the debug toolbar
 app.secret_key = "ABC"
-
 gr_user_id = "16767050"
-
 current_user_id = 1
-
-# print goodreads_key
-# print gr_user_id
-# print current_user_id
 
 ######### ROUTES #########
 
 @app.route("/")
 def index():
     """Landing page; includes login."""
-
     return render_template("home.html")
 
 @app.route("/login", methods = ['GET', 'POST'])
@@ -60,7 +51,6 @@ def login():
             session['user_id'] =  user.user_id
             return redirect(url_for('recommendations'))
         else:
-            # logic: counts login attempts; maybe first show try to log in again; later, recommend creating an account
             flash("Wrong username or password! Please try again, or go to sign up page to create new account.")
 
     return render_template('login.html')
@@ -70,8 +60,6 @@ def login():
 def logout():
     session["user_id"] = None
     return render_template('logout.html')
-
-
 
 
 @app.route("/sign-up", methods=['GET', 'POST'])
@@ -103,7 +91,6 @@ def sign_up():
                 f_name=f_name, l_name=l_name,
                 goodreads_uid=goodreads_uid, rec_frequency=rec_frequency,
                 sign_up_date=dt.datetime.now(), paused=0, user_id=user_id)
-            print new_user
             db.session.add(new_user)
             db.session.commit()
             flash("Welcome to NextBook!")
@@ -123,7 +110,6 @@ def sign_up():
     return render_template('sign-up.html')
 
 
-
 @app.route("/get_signup_status")
 def get_new_user_job_results():
     """Returns status of redis job to see if recommendations are available."""
@@ -134,7 +120,6 @@ def get_new_user_job_results():
     if job.result == None:
         return None
     else:
-        # return recs
         current_user = User.query.get(session['current_user_id'])
 
         query = Recommendation.query.filter(Recommendation.date_provided <= dt.datetime.now(),
@@ -155,11 +140,9 @@ def get_new_user_job_results():
         return jsonify(today_rec)
 
 
-
 @app.route("/recommendations")
 def recommendations():
     """List of all recommendations; allows users to leave feedback on recommendations."""
-    # check for logged in user
 
     current_user = User.query.get(1)
 
@@ -182,7 +165,6 @@ def recommendations():
     return render_template("recommendation-list.html", recs_to_date=recs_to_show, today_rec=today_rec)
 
 
-
 @app.route("/recommendations/<int:rec_id>")
 def rec_details(rec_id):
     """Provides details on each specific recommendation."""
@@ -191,7 +173,6 @@ def rec_details(rec_id):
     print current_rec.response
 
     return render_template("recommendation-detail.html", rec=current_rec)
-
 
 
 @app.route("/recommendations/<int:rec_id>/user-feedback", methods=['POST'])
@@ -215,7 +196,6 @@ def record_user_feedback(rec_id):
     button_to_color = {'rec_id': rec_id, 'button': response}
 
     return jsonify(button_to_color)
-
 
 
 @app.route("/account")
@@ -244,15 +224,11 @@ def change_account_status():
     return jsonify({"status": status})
 
 
-
 #### APP SETUP & MAINTENANCE ####
 
 # need to send emails to all users at noon
 # need to update database daily at midnight
 # scheduler.start()
-
-
-
 
 connect_to_db(app)
 
