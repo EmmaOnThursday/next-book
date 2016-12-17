@@ -1,12 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
 import pdb
-import math 
+import math
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-
-#######################################################
-#Class & Table Definitions
-
 
 class User(db.Model):
     """NextBook users."""
@@ -23,7 +19,6 @@ class User(db.Model):
     sign_up_date = db.Column(db.DateTime, nullable=False)
     paused = db.Column(db.Integer, nullable=False, default=0)
     paused_date = db.Column(db.DateTime, nullable=True)
-
 
 
 class Book(db.Model):
@@ -60,7 +55,7 @@ class Recommendation(db.Model):
     date_provided = db.Column(db.DateTime, nullable=True)
     # response: read_now, read_later, already_read, reject
     response = db.Column(db.String(20), nullable=True)
- 
+
 
 
 class UserBook(db.Model):
@@ -73,16 +68,16 @@ class UserBook(db.Model):
     gr_shelf_id = db.Column(db.Integer, nullable=True)
     gr_shelf_name = db.Column(db.String(50), nullable=True)
     #status: read, currently_reading, want_to_read, rec_no_response, not_to_read
-    status = db.Column(db.String(50), nullable=False) 
+    status = db.Column(db.String(50), nullable=False)
     source = db.Column(db.String(50), nullable=True)
     rating = db.Column(db.Integer, nullable=True)
 
 
     book = db.relationship("Book",
             backref = db.backref("userbooks"))
-    user = db.relationship("User", 
+    user = db.relationship("User",
             backref = db.backref("userbooks"))
-    recommendations = db.relationship("Recommendation", 
+    recommendations = db.relationship("Recommendation",
             backref = db.backref("userbook"))
 
 
@@ -92,17 +87,16 @@ class Subject(db.Model):
 
     __tablename__ = "subjects"
 
-    subject_id = db.Column(db.Integer, 
-                        autoincrement=True, 
+    subject_id = db.Column(db.Integer,
+                        autoincrement=True,
                         primary_key=True)
-    subject = db.Column(db.String(100), 
+    subject = db.Column(db.String(100),
                         nullable=False)
     # source = google_books, open_lib, possibly others?
     source = db.Column(db.String(25), nullable=False)
 
-
-    books = db.relationship("Book", 
-            secondary = 'book_subjects', 
+    books = db.relationship("Book",
+            secondary = 'book_subjects',
             backref = "subjects")
 
 
@@ -112,22 +106,17 @@ class BookSubject(db.Model):
 
     __tablename__ = "book_subjects"
 
-    booksubject_id = db.Column(db.Integer, 
-                            autoincrement=True, 
+    booksubject_id = db.Column(db.Integer,
+                            autoincrement=True,
                             primary_key=True)
     book_id = db.Column(db.Integer, db.ForeignKey('library.book_id'))
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.subject_id'))
 
 
 
-##############################################################################
-# Helper functions
-
 def init_app():
-    # So that we can use Flask-SQLAlchemy, we'll make a Flask app
     from flask import Flask
     app = Flask(__name__)
-
     connect_to_db(app)
     print "Connected to DB."
 
@@ -135,9 +124,8 @@ def init_app():
 def connect_to_db(app, db_uri='postgres:///nextbook'):
     """Connect the database to our Flask app."""
 
-    # Configure to use our PostgreSQL database
+    # Configure to use PostgreSQL
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-    # app.config['SQLALCHEMY_ECHO'] = True
     db.app = app
     db.init_app(app)
     with app.app_context():
@@ -151,10 +139,8 @@ if __name__ == "__main__":
     init_app()
 
 
-
 ##############################################################################
 # Example data creation
-
 
 def example_data():
 
@@ -163,8 +149,8 @@ def example_data():
     User.query.delete()
     Book.query.delete()
 
-    new_user = User(user_id = 1, 
-                    f_name = "Test", 
+    new_user = User(user_id = 1,
+                    f_name = "Test",
                     l_name = "User",
                     email = "emmaonthursday@gmail.com",
                     password = "Goodreads",
@@ -172,7 +158,7 @@ def example_data():
                     rec_frequency = 1,
                     sign_up_date = "01-01-2016",
                     paused = 0)
-    
+
     new_book = Book(book_id = 1,
                     isbn = "9780375760648",
                     title = "War and Peace",
@@ -195,7 +181,3 @@ def example_data():
     db.session.add_all([new_book, new_user, new_userbook, new_recommendation])
 
     db.session.commit()
-
-
-
-
