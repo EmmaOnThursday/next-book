@@ -1,31 +1,35 @@
-import pdb
-from model import User, Book, UserBook, BookSubject, Subject, Recommendation, db
-import pandas as pd 
-import numpy as np 
+import random
 from datetime import datetime, date
+
+import pandas as pd
+import numpy as np
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cross_validation import KFold
-import random
 
+from model import User, Book, UserBook, BookSubject, Subject, Recommendation, db
 
 
 ### HELPER FUNCTIONS ###
 
 def import_data_from_psql(user_id):
-    """Import data from psql; clean & merge DFs."""    
-    library = pd.read_sql_table('library', 
+    """Import data from psql; clean & merge dataframes."""
+    library = pd.read_sql_table(
+        'library',
         con='postgres:///nextbook',
         columns=['book_id', 'title', 'author', 'pub_year', 'original_pub_year', 'pages'])
 
-    book_subjects = pd.read_sql_table('book_subjects', 
+    book_subjects = pd.read_sql_table(
+        'book_subjects',
         con='postgres:///nextbook')
 
-    subjects = pd.read_sql_table('subjects', con='postgres:///nextbook', 
+    subjects = pd.read_sql_table(
+        'subjects', con='postgres:///nextbook',
         columns=['subject_id', 'subject'])
 
-    user_ratings = pd.read_sql_query(sql=('SELECT book_id, user_id, status, rating FROM user_books WHERE user_id=%s' % user_id), 
+    user_ratings = pd.read_sql_query(
+        sql=('SELECT book_id, user_id, status, rating FROM user_books WHERE user_id=%s' % user_id),
         con='postgres:///nextbook')
 
     library = library.merge(user_ratings, how='left', on='book_id')
@@ -68,15 +72,14 @@ def add_book_subjects_to_library(book_subjects, library):
 def get_common_subjects(book_subjects):
     """Get list of all subjects associated with 15+ books."""
 
-    #NOTES FOR REFACTORING:
-        # using count makes for long runtime; maybe build a dictionary instead?
-    common_subjects = []
-    all_subj = list(book_subjects['subject'])
-    for subject in book_subjects['subject']:
-        if all_subj.count(subject) > 14:
-            common_subjects.append(subject)
+    subject_count = {}
+    for subject in book_subjects['subject'].tolist():
+        if subject not in subject_count:
+            subject_count[subject] = 0
+        subject_count[subject] += 1
+    common_subjects = [k for k,v in subject_count.items() if v > 14]
 
-    return common_subjects #list of common subject names
+    return common_subjects
 
 
 def create_subject_columns(common_subjects, book_attributes):
@@ -92,12 +95,8 @@ def create_subject_columns(common_subjects, book_attributes):
     return book_attributes
 
 
-
 def transform_pub_dates(column):
     """Transform column of raw dates to column of bucketed date categories."""
-
-    # look into rebinning these by population sizes?
-
     date_categories = []
     for item in column:
         if item > 1950:
@@ -107,14 +106,14 @@ def transform_pub_dates(column):
         elif item > 1850:
             date_categories.append('1851-1900')
         elif item > 1800:
-            date_categories.append('1851-1900')      
+            date_categories.append('1851-1900')
         elif item > 1700:
-            date_categories.append('1701-1800')      
+            date_categories.append('1701-1800')
         elif item > 1500:
-            date_categories.append('1501-1700')  
+            date_categories.append('1501-1700')
         else:
-            date_categories.append('Unknown')    
-    
+            date_categories.append('Unknown')
+
     return date_categories
 
 
@@ -125,7 +124,7 @@ def make_date_columns_categorical_binary(book_attributes):
     orig_pub_year_cat = transform_pub_dates(book_attributes['original_pub_year'])
     book_attributes.insert(loc=5, column='orig_pub_year_cat', value=orig_pub_year_cat)
 
-    pub_year_cat = transform_pub_dates(book_attributes['pub_year'])    
+    pub_year_cat = transform_pub_dates(book_attributes['pub_year'])
     book_attributes.insert(loc=5, column='pub_year_cat', value=pub_year_cat)
 
     # turn date categories into binary dataframes; merge back into book_attributes
@@ -140,7 +139,7 @@ def make_date_columns_categorical_binary(book_attributes):
 
 def format_book_attributes_for_prediction(book_full_attr):
     """Final formatting step before creating train & predict DFs."""
-    
+
     # move rating column to index 0:
     rating_list = book_full_attr['rating']
     book_full_attr = book_full_attr.drop('rating', 1)
@@ -163,12 +162,10 @@ def rating_categories(rating_list):
     return ratings
 
 
-
 def train_model(model, training_set, validation_set):
     """Given an instance of a model, trains that model with validation."""
     model.fit(training_set.iloc[:,8:], training_set.iloc[:, 0])
     return model.predict(validation_set.iloc[:,8:])
-
 
 
 def calculate_accuracy(validation_ratings, predicted_ratings):
@@ -195,17 +192,17 @@ def add_recommendations_to_userbooks_table(recs_dataframe, user_id):
     """When book recommendations are generated, add to SQLAlchemy."""
 
     for i, row in recs_dataframe.iterrows():
-        new_userbook = UserBook(user_id=user_id, 
+        new_userbook = UserBook(user_id=user_id,
             source = "nextbook-rec",
             status = "rec_no_response",
             book_id= row['book_id'])
         db.session.add(new_userbook)
     db.session.flush()
-    
+
     for i, row in recs_dataframe.iterrows():
-        current_userbook = UserBook.query.filter(UserBook.book_id==row['book_id'], 
+        current_userbook = UserBook.query.filter(UserBook.book_id==row['book_id'],
             UserBook.user_id==user_id).first()
-        new_recommendation = Recommendation(date_created=datetime.now(), 
+        new_recommendation = Recommendation(date_created=datetime.now(),
             userbook_id=current_userbook.userbook_id)
         db.session.add(new_recommendation)
 
@@ -214,21 +211,20 @@ def add_recommendations_to_userbooks_table(recs_dataframe, user_id):
 
 
 def add_recs_to_recommendations_table(recs_dataframe, user_id):
-    """Add recommendations to database. 
+    """Add recommendations to database.
     Not standalone; called within create_and_save_recommendations."""
 
     recs_created = 0
     for i, row in recs_dataframe.iterrows():
-        current_userbook = UserBook.query.filter(UserBook.book_id == row['book_id'], 
+        current_userbook = UserBook.query.filter(UserBook.book_id == row['book_id'],
                             UserBook.user_id == user_id).first()
-        new_recommendation = Recommendation(date_created = datetime.now(), 
+        new_recommendation = Recommendation(date_created = datetime.now(),
                                 userbook_id = current_userbook.userbook_id)
         db.session.add(new_recommendation)
         recs_created += 1
     db.session.commit()
 
     return recs_created
-
 
 
 def create_and_save_recommendations(model, to_rate, user_id):
@@ -251,7 +247,6 @@ def create_and_save_recommendations(model, to_rate, user_id):
         new_recs += next_recs
 
     return new_recs
-
 
 
 def send_new_recommendations_alert(new_recs):
@@ -300,13 +295,11 @@ def set_up_data(user_id):
     rated = books_for_prediction[books_for_prediction['ratings'].isin([1,2,3,4,5])]
     to_rate = books_for_prediction[~books_for_prediction['ratings'].isin([1,2,3,4,5])]
 
-    print "created train & predict DFs"
-
     return [rated, to_rate]
 
 
 # PREDICTIONS
-def generate_new_user_predictions(rated, to_rate, user_id): 
+def generate_new_user_predictions(rated, to_rate, user_id):
     # calculate sample size; define random train & validate sets
     row_count = len(rated.index)
     if row_count > 1000:
@@ -347,8 +340,5 @@ def generate_new_user_predictions(rated, to_rate, user_id):
 
     return None
 
-
-
 # rated, to_rate = set_up_data(user_id)
 # generate_new_user_predictions(rated, to_rate)
-
