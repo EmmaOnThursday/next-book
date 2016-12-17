@@ -65,9 +65,7 @@ def logout():
 def sign_up():
     """For new users only: sign-up page."""
 
-    # if form has been submitted...
     if request.method == 'POST':
-        #save all variables from form
         f_name = request.form.get('f_name')
         l_name = request.form.get('l_name')
         email = request.form.get('email')
@@ -76,15 +74,12 @@ def sign_up():
         rec_frequency = 1
         user_id = 1
 
-        # try to instantiate user based on email from form
         user = User.query.filter(User.email == email).all()
 
-        # if user already in DB, redirect to home page
         if user != []:
             flash("Looks like you've already signed up! Please log in.")
             return redirect(url_for('index'))
 
-        # if user does not exist, create & commit to DB
         else:
             new_user = User(email=email, password=password,
                 f_name=f_name, l_name=l_name,
@@ -200,8 +195,6 @@ def record_user_feedback(rec_id):
 @app.route("/account")
 def account_page():
     """Account preferences page."""
-    # check for logged-in user
-    # pause account, change rec frequency, change email, pw, etc
     current_user = User.query.get(current_user_id)
     status = 0
     if current_user.paused == 1:
@@ -212,7 +205,6 @@ def account_page():
 
 @app.route("/change-account-status", methods=['POST'])
 def change_account_status():
-    # change account status
     current_user = User.query.get(current_user_id)
     status = request.form.get('paused')
 
